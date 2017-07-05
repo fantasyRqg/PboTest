@@ -6,6 +6,8 @@
 #include "gl/EglCore.h"
 #include "util/common.h"
 
+#include "render/PboTestRender.h"
+
 #undef TAG
 #define TAG "native-lib"
 
@@ -30,7 +32,7 @@ Java_rqg_fantasy_pbotest_MainActivity_testMuses(JNIEnv *env, jobject instance,
     AAssetManager *as = AAssetManager_fromJava(env, assetManager);
 
 
-    new std::thread([]() {
+    new std::thread([as]() {
         EglCore eglCore;
         LOGD("egl setup");
 
@@ -44,6 +46,12 @@ Java_rqg_fantasy_pbotest_MainActivity_testMuses(JNIEnv *env, jobject instance,
         eglCore.makeCurrent(EGL_NO_SURFACE);
 
         eglCore.logGlInfo();
+
+        PboTestRender render;
+
+        render.setUp(as);
+
+        render.drawFrame(0);
 
         LOGD("egl tearDown");
         eglCore.tearDown();

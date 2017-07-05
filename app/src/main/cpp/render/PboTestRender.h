@@ -21,8 +21,10 @@ public:
 
 private:
     GLuint mProgramId;
-    GLuint mVertextArrayId;
-    GLuint mVertextBufferId;
+    GLuint mVertexArrayId;
+    GLuint mVertexBufferId;
+
+    GLuint  mPbo;
 };
 
 
