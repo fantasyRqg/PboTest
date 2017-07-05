@@ -25,7 +25,7 @@ EglCore::EglCore()
 
 }
 
-EglCore::~EGLWrapper() {
+EglCore::~EglCore() {
     tearDown();
 }
 
@@ -130,7 +130,7 @@ EGLSurface EglCore::createOffscreenSurface(int width, int height) {
 void EglCore::makeCurrent(EGLSurface eglSurface) {
     if (mEglDisplay == EGL_NO_DISPLAY) {
         // called makeCurrent() before create?
-        LOGD(TAG, "NOTE: makeCurrent w/o display");
+        LOGD("NOTE: makeCurrent w/o display");
     }
     if (!eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext)) {
         throw new std::runtime_error("eglMakeCurrent failed");

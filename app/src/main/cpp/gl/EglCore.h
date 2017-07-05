@@ -25,7 +25,7 @@ class EglCore {
 public:
     EglCore();
 
-    ~EGLWrapper();
+    ~EglCore();
 
     bool setUp();
 

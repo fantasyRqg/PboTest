@@ -30,7 +30,7 @@ void EglSurfaceBase::createOffscreenSurface(int width, int height) {
 
 int EglSurfaceBase::getWidth() const {
     if (mWidth < 0) {
-        mEglCore->querySurface(mEglSurface, EGL_WIDTH);
+        return mEglCore->querySurface(mEglSurface, EGL_WIDTH);
     } else {
         return mWidth;
     }
@@ -62,3 +62,4 @@ bool EglSurfaceBase::swapBuffers() {
 void EglSurfaceBase::setPresentationTime(long timeUs) {
     mEglCore->presentationTimeANDROID(mEglSurface, timeUs);
 }
+
