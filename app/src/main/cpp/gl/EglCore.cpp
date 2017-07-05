@@ -99,6 +99,7 @@ void EglCore::releaseSurface(EGLSurface eglSurface) {
     eglDestroySurface(mEglDisplay, eglSurface);
 }
 
+
 EGLSurface EglCore::createWindowSurface(NativeWindowType window) {
 
     EGLint attrib_list[] = {
@@ -163,8 +164,15 @@ void EglCore::presentationTimeANDROID(EGLSurface eglSurface, long nanoseconds) {
 }
 
 void EglCore::logGlInfo() {
-    LOGI("%s", glGetString(GL_VERSION));
-    LOGI("%s", glGetString(GL_VENDOR));
-    LOGI("%s", glGetString(GL_RENDERER));
-    LOGI("%s", glGetString(GL_EXTENSIONS));
+    LOGD("%s", glGetString(GL_VERSION));
+    LOGD("%s", glGetString(GL_VENDOR));
+    LOGD("%s", glGetString(GL_RENDERER));
+    LOGD("%s", glGetString(GL_EXTENSIONS));
+}
+
+void EglCore::makeNothingCurrent() {
+    if (!eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+        throw std::runtime_error("eglMakeCurrent failed");
+    }
+
 }

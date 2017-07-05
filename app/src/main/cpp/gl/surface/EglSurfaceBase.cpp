@@ -48,6 +48,8 @@ void EglSurfaceBase::releaseEglSurface() {
     mEglCore->releaseSurface(mEglSurface);
     mEglSurface = EGL_NO_SURFACE;
     mWidth = mHeight = -1;
+
+    mEglCore->makeNothingCurrent();
 }
 
 void EglSurfaceBase::makeCurrent() {

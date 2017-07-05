@@ -50,8 +50,13 @@ public:
      */
     void presentationTimeANDROID(EGLSurface eglSurface, long nanoseconds);
 
+    /**
+     * Makes no context current.
+     */
+    void makeNothingCurrent();
 
     void logGlInfo();
+
 protected:
     bool mOffScreen;
     EGLDisplay mEglDisplay;

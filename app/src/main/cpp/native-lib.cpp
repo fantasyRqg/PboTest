@@ -5,7 +5,6 @@
 
 #include "gl/EglCore.h"
 #include "util/LogUtil.h"
-#include "gl/surface/OffscreenSurface.h"
 
 #undef TAG
 #define TAG "native-lib"
@@ -32,14 +31,9 @@ Java_rqg_fantasy_pbotest_MainActivity_stringFromJNI(
             return;
         }
 
-
-        OffscreenSurface surface(&eglCore, 1280, 720);
-        surface.makeCurrent();
+        eglCore.makeCurrent(EGL_NO_SURFACE);
 
         eglCore.logGlInfo();
-
-        surface.release();
-
 
         LOGD("egl tearDown");
         eglCore.tearDown();
