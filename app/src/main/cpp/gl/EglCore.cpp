@@ -2,8 +2,10 @@
 // Created by ranqingguo on 7/4/17.
 //
 
-#include "EglCore.h"
+#include <sstream>
 
+#include "EglCore.h"
+#include "../util/LogUtil.h"
 
 #undef TAG
 #define TAG "EglCore"
@@ -17,12 +19,9 @@
                                     } \
                             } while (0)
 
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO , TAG, __VA_ARGS__)
 
-
-EglCore::EglCore(EGLNativeWindowType window, bool offScreen)
-        : mEglDisplay(EGL_NO_DISPLAY), mEglSurface(EGL_NO_SURFACE), mEglContext(EGL_NO_CONTEXT),
-          mWindow(window), mOffScreen(offScreen) {
+EglCore::EglCore()
+        : mEglDisplay(EGL_NO_DISPLAY), mEglContext(EGL_NO_CONTEXT) {
 
 }
 
@@ -65,13 +64,13 @@ bool EglCore::setUp() {
             eglChooseConfig(mEglDisplay, DEFAULT_CONFIG_ATTRIBS, &mGlConfig, 1, &numConfigs)
             && (numConfigs > 0));
 
-    mEglSurface = eglCreateWindowSurface(mEglDisplay, mGlConfig, mWindow, NULL);
-    EGL_RESULT_CHECK(mEglSurface != EGL_NO_SURFACE);
+//    mEglSurface = eglCreateWindowSurface(mEglDisplay, mGlConfig, mWindow, NULL);
+//    EGL_RESULT_CHECK(mEglSurface != EGL_NO_SURFACE);
 
     mEglContext = eglCreateContext(mEglDisplay, mGlConfig, EGL_NO_CONTEXT, DEFAULT_CONTEXT_ATTRIBS);
     EGL_RESULT_CHECK(mEglContext != EGL_NO_CONTEXT);
 
-    EGL_RESULT_CHECK(eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext));
+//    EGL_RESULT_CHECK(eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext));
 
 
     LOGI("%s", glGetString(GL_VERSION));
@@ -90,29 +89,76 @@ bool EglCore::tearDown() {
     }
 
     if (mEglDisplay != EGL_NO_DISPLAY) {
-
-        if (mEglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(mEglDisplay, mEglSurface);
-        }
-
         eglTerminate(mEglDisplay);
     }
 
 
     mEglContext = EGL_NO_CONTEXT;
-    mEglSurface = EGL_NO_SURFACE;
     mEglDisplay = EGL_NO_DISPLAY;
 
     ANativeWindow_release(mWindow);
     return true;
 }
 
-bool EglCore::querySurfaceSize(int *size) {
-    EGL_RESULT_CHECK(eglQuerySurface(mEglDisplay, mEglSurface, EGL_WIDTH, size));
-    EGL_RESULT_CHECK(eglQuerySurface(mEglDisplay, mEglSurface, EGL_HEIGHT, size + 1));
+
+void EglCore::releaseSurface(EGLSurface eglSurface) {
+    eglDestroySurface(mEglDisplay, eglSurface);
 }
 
-bool EglCore::swapBuffers() {
-    EGL_RESULT_CHECK(eglSwapBuffers(mEglDisplay, mEglSurface));
-    return true;
+EGLSurface EglCore::createWindowSurface(NativeWindowType window) {
+
+    EGLint attrib_list[] = {
+            EGL_NONE
+    };
+
+    EGLSurface eglSurface = eglCreateWindowSurface(mEglDisplay, mGlConfig, window, attrib_list);
+
+    checkEglError("createWindowSurface");
+
+
+    if (eglSurface == nullptr) {
+        throw std::runtime_error("createWindowSurface failure , surface is null");
+    }
+
+    return eglSurface;
+}
+
+EGLSurface EglCore::createOffscreenSurface(int width, int height) {
+    return nullptr;
+}
+
+void EglCore::makeCurrent(EGLSurface eglSurface) {
+    if (mEglDisplay == EGL_NO_DISPLAY) {
+        // called makeCurrent() before create?
+        LOGD(TAG, "NOTE: makeCurrent w/o display");
+    }
+    if (!eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext)) {
+        throw new std::runtime_error("eglMakeCurrent failed");
+    }
+}
+
+bool EglCore::swapBuffers(EGLSurface eglSurface) {
+    return eglSwapBuffers(mEglDisplay, eglSurface) == EGL_TRUE;
+}
+
+void EglCore::checkEglError(std::string msg) {
+    int error;
+    if ((error = eglGetError()) != EGL_SUCCESS) {
+
+        std::stringstream ss;
+        ss << msg << ": EGL error: 0x" << std::hex << error;
+        throw std::runtime_error(ss.str());
+    }
+}
+
+int EglCore::querySurface(EGLSurface eglSurface, int what) {
+    int value[1];
+    eglQuerySurface(mEglDisplay, eglSurface, what, value);
+
+    return value[0];
+}
+
+
+void EglCore::presentationTimeANDROID(EGLSurface eglSurface, long nanoseconds) {
+    eglPresentationTimeANDROID(mEglDisplay, eglSurface, nanoseconds);
 }

@@ -21,11 +21,13 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
              native-lib.cpp
-             EglCore.cpp
+             gl/EglCore.cpp
+             gl/surface/EglSurfaceBase.cpp
              RenderFrame.cpp
-             IFrameSource.cpp
+             framesource/IFrameSource.cpp
              PboPool.cpp
              render/EffectRender.cpp
+             EffectStage.cpp
               )
 
 # Searches for a specified prebuilt library and stores the path as a

@@ -14,7 +14,11 @@ public:
      */
     int getZOrder() const;
 
-    void prepareNextFrame();
+    /**
+     * assume: after Bpo upload texture via DMA, we can use CPU do something
+     *
+     */
+    virtual void prepareNextFrame() = 0;
 
     virtual void drawFrame() = 0;
 
