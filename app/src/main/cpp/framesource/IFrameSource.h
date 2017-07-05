@@ -13,11 +13,17 @@ typedef std::function<void(void *, int)> FrameReadyCallback;
 class IFrameSource {
 
 public:
-    IFrameSource(long startMills, long endMills, FrameReadyCallback &&callback);
+    IFrameSource(long startMills, long endMills);
 
     virtual bool prepare() = 0;
 
     virtual bool requestFrame() = 0;
+
+    void setCallback(const FrameReadyCallback &callback);
+
+    long getStartMills() const;
+
+    long getEndMills() const;
 
 protected:
     long mStartMills;

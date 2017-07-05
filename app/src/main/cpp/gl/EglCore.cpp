@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "EglCore.h"
-#include "../util/LogUtil.h"
+#include "../util/common.h"
 
 #undef TAG
 #define TAG "EglCore"

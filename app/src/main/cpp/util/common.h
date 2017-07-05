@@ -1,10 +1,11 @@
 //
-// Created by ranqingguo on 7/5/17.
+// Created by ranqingguo on 3/9/17.
 //
 
-#ifndef PBOTEST_LOGUTIL_H
-#define PBOTEST_LOGUTIL_H
+#ifndef ANDROIDOPENGLEXAMPLES_COMMON_H
+#define ANDROIDOPENGLEXAMPLES_COMMON_H
 
+#include <GLES3/gl3.h>
 #include <android/log.h>
 
 
@@ -15,4 +16,14 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , TAG, __VA_ARGS__)
 
 
-#endif //PBOTEST_LOGUTIL_H
+namespace glCommon {
+    bool checkShaderAndPrint(GLuint shader);
+
+    bool checkProgramAndPrint(GLuint program);
+
+    bool checkGlError(const char *funcName);
+
+}
+
+
+#endif //ANDROIDOPENGLEXAMPLES_COMMON_H
