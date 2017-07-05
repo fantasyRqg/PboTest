@@ -11,8 +11,14 @@ add_library(
              native-lib.cpp
              gl/EglCore.cpp
              gl/surface/EglSurfaceBase.cpp
+             gl/surface/OffscreenSurface.cpp
+             gl/surface/WindowSurface.cpp
+
+
              RenderFrame.cpp
              framesource/IFrameSource.cpp
+
+
              PboPool.cpp
              render/EffectRender.cpp
              EffectStage.cpp

@@ -53,7 +53,9 @@ bool EglCore::setUp() {
             EGL_NONE};
 
     mEglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    EGL_RESULT_CHECK(mEglDisplay != EGL_NO_DISPLAY);
+    if (mEglDisplay == EGL_NO_DISPLAY) {
+        throw std::runtime_error("get default display failure");
+    }
 
     EGLint major;
     EGLint minor;
@@ -71,12 +73,6 @@ bool EglCore::setUp() {
     EGL_RESULT_CHECK(mEglContext != EGL_NO_CONTEXT);
 
 //    EGL_RESULT_CHECK(eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext));
-
-
-    LOGI("%s", glGetString(GL_VERSION));
-    LOGI("%s", glGetString(GL_VENDOR));
-    LOGI("%s", glGetString(GL_RENDERER));
-    LOGI("%s", glGetString(GL_EXTENSIONS));
     return true;
 }
 
@@ -95,8 +91,6 @@ bool EglCore::tearDown() {
 
     mEglContext = EGL_NO_CONTEXT;
     mEglDisplay = EGL_NO_DISPLAY;
-
-    ANativeWindow_release(mWindow);
     return true;
 }
 
@@ -124,7 +118,12 @@ EGLSurface EglCore::createWindowSurface(NativeWindowType window) {
 }
 
 EGLSurface EglCore::createOffscreenSurface(int width, int height) {
-    return nullptr;
+    GLint attrib_list[] = {
+            EGL_WIDTH, width,
+            EGL_HEIGHT, height,
+            EGL_NONE
+    };
+    return eglCreatePbufferSurface(mEglDisplay, mGlConfig, attrib_list);
 }
 
 void EglCore::makeCurrent(EGLSurface eglSurface) {
@@ -161,4 +160,11 @@ int EglCore::querySurface(EGLSurface eglSurface, int what) {
 
 void EglCore::presentationTimeANDROID(EGLSurface eglSurface, long nanoseconds) {
     eglPresentationTimeANDROID(mEglDisplay, eglSurface, nanoseconds);
+}
+
+void EglCore::logGlInfo() {
+    LOGI("%s", glGetString(GL_VERSION));
+    LOGI("%s", glGetString(GL_VENDOR));
+    LOGI("%s", glGetString(GL_RENDERER));
+    LOGI("%s", glGetString(GL_EXTENSIONS));
 }

@@ -27,6 +27,8 @@ public:
      */
     void setPresentationTime(long nanoseconds);
 
+    virtual void release() = 0;
+
 protected:
     void createWindowSurface(EGLNativeWindowType window);
 

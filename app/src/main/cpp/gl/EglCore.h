@@ -50,12 +50,13 @@ public:
      */
     void presentationTimeANDROID(EGLSurface eglSurface, long nanoseconds);
 
+
+    void logGlInfo();
 protected:
     bool mOffScreen;
     EGLDisplay mEglDisplay;
     EGLContext mEglContext;
     EGLConfig mGlConfig;
-    EGLNativeWindowType mWindow;
 
 
 private:
