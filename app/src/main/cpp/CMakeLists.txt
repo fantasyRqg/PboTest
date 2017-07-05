@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frtti -fexceptions -Wall")
 
+set(EXTERNAL_DIR ../../../../external)
 
 file(GLOB_RECURSE Muses_SRC
             "*.cpp"
@@ -10,8 +11,10 @@ file(GLOB_RECURSE Muses_SRC
             "*.hpp"
             )
 
+set(Lib_Name "native-lib")
+
 add_library(
-             native-lib
+             ${Lib_Name}
 
              SHARED
 
@@ -21,7 +24,11 @@ find_library(
               log-lib
               log )
 
-target_link_libraries(native-lib
+target_include_directories(${Lib_Name} PRIVATE
+        ${EXTERNAL_DIR}/glm
+        )
+
+target_link_libraries(${Lib_Name}
 
                        android
                        EGL
