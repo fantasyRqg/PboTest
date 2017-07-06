@@ -23,11 +23,10 @@
 class EglCore {
 
 public:
-    EglCore();
+    EglCore(EGLContext sharedContext = EGL_NO_CONTEXT);
 
     ~EglCore();
 
-    bool setUp();
 
     bool tearDown();
 
@@ -66,6 +65,8 @@ protected:
 
 private:
     void checkEglError(std::string msg);
+
+    bool setUp(EGLContext sharedContext);
 
 };
 

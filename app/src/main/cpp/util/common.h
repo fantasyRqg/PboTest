@@ -23,6 +23,9 @@ namespace glCommon {
 
     bool checkGlError(const char *funcName);
 
+
+    int64_t systemnanotime();
+
 }
 
 

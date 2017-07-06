@@ -20,16 +20,16 @@
                             } while (0)
 
 
-EglCore::EglCore()
+EglCore::EglCore(EGLContext sharedContext)
         : mEglDisplay(EGL_NO_DISPLAY), mEglContext(EGL_NO_CONTEXT) {
-
+    setUp(sharedContext);
 }
 
 EglCore::~EglCore() {
     tearDown();
 }
 
-bool EglCore::setUp() {
+bool EglCore::setUp(EGLContext sharedContext) {
     static const EGLint DEFAULT_CONTEXT_ATTRIBS[] = {
             EGL_CONTEXT_CLIENT_VERSION, 3,
             EGL_NONE};
@@ -69,7 +69,7 @@ bool EglCore::setUp() {
 //    mEglSurface = eglCreateWindowSurface(mEglDisplay, mGlConfig, mWindow, NULL);
 //    EGL_RESULT_CHECK(mEglSurface != EGL_NO_SURFACE);
 
-    mEglContext = eglCreateContext(mEglDisplay, mGlConfig, EGL_NO_CONTEXT, DEFAULT_CONTEXT_ATTRIBS);
+    mEglContext = eglCreateContext(mEglDisplay, mGlConfig, sharedContext, DEFAULT_CONTEXT_ATTRIBS);
     EGL_RESULT_CHECK(mEglContext != EGL_NO_CONTEXT);
 
 //    EGL_RESULT_CHECK(eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext));
@@ -176,3 +176,4 @@ void EglCore::makeNothingCurrent() {
     }
 
 }
+

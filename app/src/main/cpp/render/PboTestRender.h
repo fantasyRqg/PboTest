@@ -24,7 +24,9 @@ private:
     GLuint mVertexArrayId;
     GLuint mVertexBufferId;
 
-    GLuint  mPbo;
+    GLuint mPbo;
+
+    void createBpo(size_t imageSize, const GLuint *pbo, int index) const;
 };
 
 

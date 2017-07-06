@@ -33,19 +33,18 @@ Java_rqg_fantasy_pbotest_MainActivity_testMuses(JNIEnv *env, jobject instance,
 
 
     new std::thread([as]() {
-        EglCore eglCore;
         LOGD("egl setup");
-
+        EglCore *eglCore;
         try {
-            eglCore.setUp();
+            eglCore = new EglCore();
         } catch (std::runtime_error e) {
             LOGE("egl core setup error : %s", e.what());
             return;
         }
 
-        eglCore.makeCurrent(EGL_NO_SURFACE);
+        eglCore->makeCurrent(EGL_NO_SURFACE);
 
-        eglCore.logGlInfo();
+        eglCore->logGlInfo();
 
         PboTestRender render;
 
@@ -53,8 +52,11 @@ Java_rqg_fantasy_pbotest_MainActivity_testMuses(JNIEnv *env, jobject instance,
 
         render.drawFrame(0);
 
+        render.tearDown();
         LOGD("egl tearDown");
-        eglCore.tearDown();
+        eglCore->tearDown();
+
+        delete eglCore;
     });
 
 }
