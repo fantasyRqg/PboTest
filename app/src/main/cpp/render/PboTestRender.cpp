@@ -122,7 +122,7 @@ void PboTestRender::drawFrame(long millsecond) {
 //            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
 //                         0);
 
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+//            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 //        auto sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 //
 //        glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
@@ -136,6 +136,16 @@ void PboTestRender::drawFrame(long millsecond) {
             LOGD("iter %d , cost %lld", i, current - lastTime);
         }
 
+//        glFlush();
+//        glFinish();
+
+        for (int i = 0; i < 10; ++i) {
+            auto start = systemnanotime();
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+            LOGV("glTexSubImage2D cost %10lld", systemnanotime() - start);
+        }
+
 
         auto start = systemnanotime();
         glFlush();
@@ -144,42 +154,42 @@ void PboTestRender::drawFrame(long millsecond) {
         LOGI("finish cost = %10lld", systemnanotime() - start);
     }
 
-    LOGI("with out pbo");
-
-
-    for (int j = 0; j < 10; ++j) {
-
-
-        for (int i = 0; i < 10; ++i) {
-
-            auto lastTime = systemnanotime();
-
-
-            glBindTexture(GL_TEXTURE_2D, textureId[i]);
-//            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-//                         imageArray[i]);
-
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-                            imageArray[(i + j) % 10]);
-
-//        auto sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+//    LOGI("with out pbo");
 //
-//        glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
-//        glDeleteSync(sync);
-
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-            auto current = systemnanotime();
-            LOGD("without iter %d , cost %10lld", i, current - lastTime);
-
-        }
-
-        auto start = systemnanotime();
-        glFlush();
-        glFinish();
-
-        LOGI("without finish cost = %10lld", systemnanotime() - start);
-    }
+//
+//    for (int j = 0; j < 10; ++j) {
+//
+//
+//        for (int i = 0; i < 10; ++i) {
+//
+//            auto lastTime = systemnanotime();
+//
+//
+//            glBindTexture(GL_TEXTURE_2D, textureId[i]);
+////            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+////                         imageArray[i]);
+//
+//            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+//                            imageArray[(i + j) % 10]);
+//
+////        auto sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+////
+////        glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
+////        glDeleteSync(sync);
+//
+//
+//            glBindTexture(GL_TEXTURE_2D, 0);
+//            auto current = systemnanotime();
+//            LOGD("without iter %d , cost %10lld", i, current - lastTime);
+//
+//        }
+//
+//        auto start = systemnanotime();
+//        glFlush();
+//        glFinish();
+//
+//        LOGI("without finish cost = %10lld", systemnanotime() - start);
+//    }
 
 
     for (int i = 0; i < 10; ++i) {
