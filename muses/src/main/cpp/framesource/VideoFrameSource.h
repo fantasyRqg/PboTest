@@ -11,6 +11,8 @@
 #include "IFrameSource.h"
 #include "DecodeThread.h"
 
+class DecodeThread;
+
 class VideoFrameSource : public IFrameSource {
 public:
 
@@ -31,6 +33,7 @@ public:
 
     bool isOk() override;
 
+    friend class DecodeThread;
 
 private:
     void initMediaInfo(AMediaFormat *format);
@@ -41,6 +44,7 @@ private:
     AMediaExtractor *mExtractor;
     AMediaFormat *mFormat;
     AMediaCodec *mDecoder;
+    const char *mMimeType = nullptr;
 
 };
 

@@ -22,9 +22,9 @@ VideoFrameSource::VideoFrameSource(std::string &videoPath)
         if (mimetype.find(videoPrefix) != std::string::npos) {
             AMediaExtractor_selectTrack(mExtractor, i);
 
+            mMimeType = buf;
             initMediaInfo(format);
 
-            delete[] buf;
             return;
         }
 
@@ -59,6 +59,10 @@ VideoFrameSource::~VideoFrameSource() {
     if (mDecoder != nullptr) {
         AMediaCodec_stop(mDecoder);
         AMediaCodec_delete(mDecoder);
+    }
+
+    if (mMimeType != nullptr) {
+        delete[] mMimeType;
     }
 }
 

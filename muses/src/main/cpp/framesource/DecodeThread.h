@@ -26,6 +26,9 @@ public:
 private:
 
 
+    void startMediaCodec(VideoFrameSource *pVfs);
+
+    ssize_t queueInputBuffer(VideoFrameSource *pVfs);
 };
 
 
