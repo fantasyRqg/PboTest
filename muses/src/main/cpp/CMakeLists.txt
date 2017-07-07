@@ -30,6 +30,7 @@ target_include_directories(${Lib_Name} PRIVATE
 
 target_link_libraries(${Lib_Name}
 
+                       mediandk
                        android
                        EGL
                        GLESv3

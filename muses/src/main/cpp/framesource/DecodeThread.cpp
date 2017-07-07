@@ -34,13 +34,9 @@ void DecodeThread::handle(int what, void *data) {
 }
 
 DecodeThread::~DecodeThread() {
-    if (mDecoder != nullptr)
-        AMediaCodec_stop(mDecoder);
+
 
 }
 
-DecodeThread::DecodeThread(AMediaFormat *format, AMediaExtractor *extractor) : mFormat(format),
-                                                                               mExtractor(
-                                                                                       extractor) {
+DecodeThread::DecodeThread() {}
 
-}

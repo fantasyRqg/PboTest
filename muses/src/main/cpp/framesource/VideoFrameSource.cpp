@@ -24,14 +24,14 @@ VideoFrameSource::VideoFrameSource(std::string &videoPath)
 
             initMediaInfo(format);
 
-            delete buf;
+            delete[] buf;
             return;
         }
 
         AMediaFormat_delete(format);
     }
 
-    delete buf;
+    delete[] buf;
 
     throw std::runtime_error("init video frame source failure");
 
@@ -51,14 +51,21 @@ bool VideoFrameSource::isOk() {
 }
 
 VideoFrameSource::~VideoFrameSource() {
-    AMediaExtractor_delete(mExtractor);
-    AMediaFormat_delete(mFormat);
+    if (mExtractor != nullptr)
+        AMediaExtractor_delete(mExtractor);
+    if (mFormat != nullptr)
+        AMediaFormat_delete(mFormat);
+
+    if (mDecoder != nullptr) {
+        AMediaCodec_stop(mDecoder);
+        AMediaCodec_delete(mDecoder);
+    }
 }
 
 void VideoFrameSource::initMediaInfo(AMediaFormat *format) {
     mFormat = format;
     mStartUs = 0;
-    AMediaFormat_getInt64(format, AMEDIAFORMAT_KEY_DURATION, &mEndUs);
+    AMediaFormat_getInt64(format, AMEDIAFORMAT_KEY_DURATION, (int64_t *) &mEndUs);
     AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, &mFrameRate);
 
     if (!isOk()) {

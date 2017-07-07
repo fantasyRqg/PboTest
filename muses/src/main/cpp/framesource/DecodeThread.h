@@ -11,24 +11,20 @@
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaCodec.h>
 
-#include "util/Looper.h"
 #include "../util/Looper.h"
 #include "VideoFrameSource.h"
 
 class DecodeThread : public Looper {
 
 public:
-    DecodeThread(AMediaFormat *format, AMediaExtractor *extractor);
+    DecodeThread();
 
     virtual ~DecodeThread();
 
     void handle(int what, void *data) override;
 
 private:
-    VideoFrameSource *mFrameSource = nullptr;
-    AMediaFormat *mFormat = nullptr;
-    AMediaExtractor *mExtractor = nullptr;
-    AMediaCodec *mDecoder = nullptr;
+
 
 };
 

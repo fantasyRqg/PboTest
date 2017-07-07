@@ -9,7 +9,7 @@
 
 #include "effect/Effect.h"
 
-struct EffectItem
+struct EffectItem;
 
 class EffectLine {
 

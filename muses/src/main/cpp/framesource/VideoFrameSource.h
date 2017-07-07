@@ -40,6 +40,7 @@ private:
     std::string mVideoPath;
     AMediaExtractor *mExtractor;
     AMediaFormat *mFormat;
+    AMediaCodec *mDecoder;
 
 };
 
