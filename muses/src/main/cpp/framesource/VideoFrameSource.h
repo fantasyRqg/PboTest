@@ -38,6 +38,7 @@ public:
 private:
     void initMediaInfo(AMediaFormat *format);
 
+    void onDequeueOutpuBuffer();
 
     int mFrameRate;
     std::string mVideoPath;
@@ -45,6 +46,7 @@ private:
     AMediaFormat *mFormat;
     AMediaCodec *mDecoder;
     const char *mMimeType = nullptr;
+    bool mDecoderRun = false;
 
 };
 

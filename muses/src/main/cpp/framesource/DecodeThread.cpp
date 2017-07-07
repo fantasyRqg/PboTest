@@ -22,6 +22,7 @@ void DecodeThread::handle(int what, void *data) {
             startMediaCodec(pVfs);
             break;
         case kWhatDequeueOutputBuffer:
+            dequeueOutputBuffer(pVfs);
 
             break;
         case kWhatQueueInputBuffer:
@@ -35,7 +36,10 @@ void DecodeThread::handle(int what, void *data) {
             break;
 
         case kWhatDecodeDone:
-
+            AMediaCodec_stop(pVfs->mDecoder);
+            AMediaCodec_delete(pVfs->mDecoder);
+            pVfs->mDecoder = nullptr;
+            pVfs->mDecoderRun = false;
             break;
     }
 }
@@ -51,6 +55,7 @@ void DecodeThread::startMediaCodec(VideoFrameSource *pVfs) {
     pVfs->mDecoder = AMediaCodec_createDecoderByType(pVfs->mMimeType);
     AMediaCodec_configure(pVfs->mDecoder, pVfs->mFormat, nullptr, nullptr, 0);
     AMediaCodec_start(pVfs->mDecoder);
+    pVfs->mDecoderRun = true;
 }
 
 ssize_t DecodeThread::queueInputBuffer(VideoFrameSource *pVfs) {
@@ -72,11 +77,18 @@ ssize_t DecodeThread::queueInputBuffer(VideoFrameSource *pVfs) {
         } else {
             AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, 0, 0,
                                          AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM);
-            post(kWhatDecodeDone, pVfs);
             return -1;
         }
     }
 
     return index;
+}
+
+void DecodeThread::dequeueOutputBuffer(VideoFrameSource *pSource) {
+    if (!pSource->mDecoderRun) {
+        pSource->onDequeueOutpuBuffer();
+    }
+    auto decoder = pSource->mDecoder;
+
 }
 
