@@ -30,6 +30,8 @@ public:
 
     virtual void handle(int what, void *data) = 0;
 
+
+
 private:
     void tailAppendMessage(LooperMessage *message);
 

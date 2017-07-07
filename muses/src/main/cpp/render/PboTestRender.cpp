@@ -75,6 +75,7 @@ void PboTestRender::drawFrame(long millsecond) {
     GLuint pbo[10];
     glGenBuffers(10, pbo);
 
+
     for (int i = 0; i < 10; ++i) {
         createBpo(imageSize, pbo, i);
     }

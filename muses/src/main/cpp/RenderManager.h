@@ -6,7 +6,7 @@
 #define MUSES_RENDERFRAME_H
 
 
-class RenderFrame {
+class RenderManager {
 public:
 
 };

@@ -4,14 +4,14 @@
 
 #include <cstdlib>
 #include <string.h>
-#include "EffectRender.h"
+#include "Render.h"
 #include "../util/common.h"
 
 #undef TAG
 #define TAG "EffectRender"
 
 
-GLuint EffectRender::loadShader(AAssetManager *amgr, const char *fname, GLenum type) {
+GLuint Render::loadShader(AAssetManager *amgr, const char *fname, GLenum type) {
 
     GLuint id = 0;
     id = glCreateShader(type);
@@ -50,10 +50,21 @@ GLuint EffectRender::loadShader(AAssetManager *amgr, const char *fname, GLenum t
     }
 }
 
-void EffectRender::setZOrder(int ZOrder) {
+void Render::setZOrder(int ZOrder) {
     mZOrder = ZOrder;
 }
 
-int EffectRender::getZOrder() const {
+int Render::getZOrder() const {
     return mZOrder;
 }
+
+bool Render::isRenderFbo() const {
+    return mRenderFbo;
+}
+
+void Render::setRenderFbo(bool renderFbo) {
+    mRenderFbo = renderFbo;
+}
+
+
+

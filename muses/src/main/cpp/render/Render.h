@@ -9,7 +9,7 @@
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
 
-class EffectRender {
+class Render {
 public:
 
 
@@ -35,8 +35,14 @@ public:
 
     GLuint loadShader(AAssetManager *amgr, const char *fname, GLenum type);
 
+    bool isRenderFbo() const;
+
+    void setRenderFbo(bool renderFbo);
+
 protected:
     int mZOrder;
+    bool mRenderFbo = false;
+
 };
 
 

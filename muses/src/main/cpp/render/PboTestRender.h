@@ -6,9 +6,9 @@
 #define MUSES_PBOTESTRENDER_H
 
 
-#include "EffectRender.h"
+#include "Render.h"
 
-class PboTestRender : public EffectRender {
+class PboTestRender : public Render {
 public:
     void prepareNextFrame() override;
 
