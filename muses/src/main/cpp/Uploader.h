@@ -29,7 +29,7 @@ typedef struct PboRes {
     GLuint pbo;
     GLsync *sync;
     int state;
-    Uploader *uploader;
+//    Uploader *uploader;
 
     bool isReady();
 } PboRes;
@@ -61,6 +61,8 @@ private:
     std::mutex mUploadMutex;
     std::condition_variable mGetPboCv;
 
+    std::queue<UploadReq *> mPendingReqs;
+
     void startUploader(EGLContext *sharedContext);
 
     void requestRenderRes(RenderTask *pTask);
@@ -68,8 +70,6 @@ private:
     void prepareFrameSource(Effect *pEffect);
 
     void handleUploadAndGetPboBuf(UploadReq *pReq);
-
-    void handleQueuePboBuf(RenderResRequest *pRequest);
 
     void handleReleasePboBuf(PboRes *pRes);
 };

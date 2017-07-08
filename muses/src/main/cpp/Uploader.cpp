@@ -59,6 +59,9 @@ void Uploader::handle(int what, void *data) {
 
 Uploader::~Uploader() {
     quit();
+
+    if (mEglCore != nullptr)
+        mEglCore->tearDown();
 }
 
 Uploader::Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread)
@@ -114,7 +117,17 @@ RenderResRequest::RenderResRequest(RenderTask *task, int resIndex) : task(task),
 
 
 void Uploader::releaseBuffer(PboRes *pboRes) {
+    post(kWhatReleasePboBuf, pboRes);
+}
 
+void Uploader::handleReleasePboBuf(PboRes *pRes) {
+    pRes->state = PboResNotUsed;
+    pRes->sync = nullptr;
+
+    if (mPendingReqs.size() > 0) {
+        post(kWhatUploadBufAndGetPbo, mPendingReqs.front());
+        mPendingReqs.pop();
+    }
 }
 
 void Uploader::handleUploadAndGetPboBuf(UploadReq *pReq) {
@@ -128,19 +141,16 @@ void Uploader::handleUploadAndGetPboBuf(UploadReq *pReq) {
         }
     }
 
-    if (pboRes == nullptr)
+    if (pboRes == nullptr) {
+        mPendingReqs.push(pReq);
         return;
+    }
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboRes->pbo);
-//    glBufferData(GL_PIXEL_UNPACK_BUFFER,)
-}
-
-void Uploader::handleQueuePboBuf(RenderResRequest *pRequest) {
-
-}
-
-void Uploader::handleReleasePboBuf(PboRes *pRes) {
-
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) pReq->size, pReq->buf, GL_STREAM_DRAW);
+    pboRes->state = PboResReady;
+    pReq->pboRes = pboRes;
+    mGetPboCv.notify_all();
 }
 
 PboRes *Uploader::uploadFrame(void *buf, size_t size) {
