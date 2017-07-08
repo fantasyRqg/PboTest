@@ -66,7 +66,7 @@ protected:
 private:
     void checkEglError(std::string msg);
 
-    bool setUp(EGLContext sharedContext);
+    bool setUp(EGLContext sharedContext = EGL_NO_CONTEXT);
 
 };
 

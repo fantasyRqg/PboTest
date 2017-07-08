@@ -11,26 +11,43 @@
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaCodec.h>
 
-#include "../util/Looper.h"
 #include "VideoFrameSource.h"
+#include "IFrameSource.h"
+#include "../util/Looper.h"
+
+class Uploader;
+
+class RenderTask;
+
+typedef struct RenderResRequest {
+    RenderResRequest(RenderTask *task, int resIndex);
+
+    RenderTask *task;
+    int resIndex;
+} RenderResRequest;
 
 class DecodeThread : public Looper {
-
 public:
+
+
     DecodeThread();
 
     virtual ~DecodeThread();
 
     void handle(int what, void *data) override;
 
+    void prepareRes(IFrameSource *pSource);
+
+    void requestFrame(RenderResRequest *pRequest);
+
+    void queueInputBuffer(VideoFrameSource *pVfs);
+
 private:
 
+    Uploader *mUploader;
 
-    void startMediaCodec(VideoFrameSource *pVfs);
 
-    ssize_t queueInputBuffer(VideoFrameSource *pVfs);
-
-    void dequeueOutputBuffer(VideoFrameSource *pSource);
+    void handleRequestFrame(RenderResRequest *pRequest);
 };
 
 

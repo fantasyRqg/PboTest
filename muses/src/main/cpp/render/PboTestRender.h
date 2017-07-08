@@ -10,13 +10,18 @@
 
 class PboTestRender : public Render {
 public:
-    void prepareNextFrame() override;
 
     void drawFrame(long millsecond) override;
 
     bool setUp(AAssetManager *amgr) override;
 
     bool tearDown() override;
+
+    void prepareDrawFrame() override;
+
+    void setDrawPboRes(PboRes **pboReses, int len) override;
+
+    int getNeededPboCount() override;
 
 
 private:

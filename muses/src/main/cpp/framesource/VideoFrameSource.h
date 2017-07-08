@@ -9,7 +9,8 @@
 #include <media/NdkMediaExtractor.h>
 
 #include "IFrameSource.h"
-#include "DecodeThread.h"
+//#include "DecodeThread.h"
+
 
 class DecodeThread;
 
@@ -27,18 +28,26 @@ public:
 
     int getFrameRate() const;
 
-    bool prepare() override;
-
-    bool requestFrame() override;
-
     bool isOk() override;
+
+    bool isPrepared() override;
+
+    bool isVideo() override;
+
+    bool skipOneFrame() override;
+
+    bool prepare(DecodeThread *decodeThread) override;
+
+    bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) override;
+
+
+private:
 
     friend class DecodeThread;
 
-private:
     void initMediaInfo(AMediaFormat *format);
 
-    void onDequeueOutpuBuffer();
+//    void onDequeueOutputBuffer();
 
     int mFrameRate;
     std::string mVideoPath;
@@ -48,6 +57,11 @@ private:
     const char *mMimeType = nullptr;
     bool mDecoderRun = false;
 
+    void startMediaCodec();
+
+    ssize_t queueInputBuffer();
+
+    int dequeueOutputBuffer(GetFrameCallback callback);
 };
 
 

@@ -12,9 +12,6 @@ IFrameSource::IFrameSource(long startMills, long endMills) :
 
 }
 
-void IFrameSource::setCallback(const FrameReadyCallback &callback) {
-    mCallback = callback;
-}
 
 long IFrameSource::getStartUs() const {
     return mStartUs;
@@ -23,6 +20,7 @@ long IFrameSource::getStartUs() const {
 long IFrameSource::getEndUs() const {
     return mEndUs;
 }
+
 //
 //long IFrameSource::getFrameStartMills() const {
 //    return mFrameStartMills;

@@ -7,8 +7,8 @@ set(EXTERNAL_DIR ../../../../external)
 
 file(GLOB_RECURSE Muses_SRC
             "*.cpp"
-            "*.h"
-            "*.hpp"
+            #"*.h"
+            #"*.hpp"
             )
 
 set(Lib_Name "native-lib")

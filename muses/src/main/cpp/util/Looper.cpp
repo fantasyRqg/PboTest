@@ -56,7 +56,7 @@ void Looper::quit() {
     if (mRunning) {
         auto msg = new LooperMessage();
         msg->data = nullptr;
-        msg->what = NULL;
+        msg->what = -1;
         msg->quit = true;
         tailAppendMessage(msg);
         mWorkThread->join();

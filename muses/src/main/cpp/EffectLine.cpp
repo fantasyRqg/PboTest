@@ -9,7 +9,7 @@ typedef struct EffectItem {
 
     EffectItem *next;
     EffectItem *prev;
-};
+} EffectItem;
 
 EffectLine::EffectLine() {
     pHeader = new EffectItem;
@@ -36,7 +36,7 @@ bool EffectLine::checkNoTimelineGap() {
             return true;
         }
 
-        if (current->pEffect->getEndTimeMills() != next->pEffect->getStartTimeMills()) {
+        if (current->pEffect->getEndTimeUs() != next->pEffect->getStartTimeUs()) {
             return false;
         }
     }

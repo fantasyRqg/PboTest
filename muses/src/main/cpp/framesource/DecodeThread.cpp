@@ -3,92 +3,82 @@
 //
 
 #include "DecodeThread.h"
-
-#define CODEC_WAIT_TIMEOUT 200000
+#include "RenderTask.h"
 
 enum {
     kWhatQueueInputBuffer,
     kWhatDequeueOutputBuffer,
     kWhatSeek,
-    kWhatDecodeDone,
-    kWhatStartNewDecode
+    kWhatReleaseRes,
+    kWhatPrepareRes,
+    kWhatRequestFrame,
+    kWhatSkipFrame,
 };
-
 
 void DecodeThread::handle(int what, void *data) {
     auto pVfs = (VideoFrameSource *) data;
     switch (what) {
-        case kWhatStartNewDecode:
-            startMediaCodec(pVfs);
+        case kWhatPrepareRes:
             break;
         case kWhatDequeueOutputBuffer:
-            dequeueOutputBuffer(pVfs);
 
             break;
-        case kWhatQueueInputBuffer:
-            auto index = queueInputBuffer(pVfs);
+        case kWhatQueueInputBuffer: {
+            auto index = ((VideoFrameSource *) data)->queueInputBuffer();
             if (index >= 0) {
                 post(kWhatQueueInputBuffer, pVfs);
             }
+        }
             break;
 
         case kWhatSeek:
             break;
 
-        case kWhatDecodeDone:
+        case kWhatRequestFrame:
+            handleRequestFrame((RenderResRequest *) data);
+            break;
+
+        case kWhatReleaseRes:
             AMediaCodec_stop(pVfs->mDecoder);
             AMediaCodec_delete(pVfs->mDecoder);
             pVfs->mDecoder = nullptr;
             pVfs->mDecoderRun = false;
             break;
+
+        case kWhatSkipFrame:
+
+            break;
+        default:
+            break;
     }
 }
 
 DecodeThread::~DecodeThread() {
-
-
+    quit();
 }
 
 DecodeThread::DecodeThread() {}
 
-void DecodeThread::startMediaCodec(VideoFrameSource *pVfs) {
-    pVfs->mDecoder = AMediaCodec_createDecoderByType(pVfs->mMimeType);
-    AMediaCodec_configure(pVfs->mDecoder, pVfs->mFormat, nullptr, nullptr, 0);
-    AMediaCodec_start(pVfs->mDecoder);
-    pVfs->mDecoderRun = true;
-}
-
-ssize_t DecodeThread::queueInputBuffer(VideoFrameSource *pVfs) {
-    auto decoder = pVfs->mDecoder;
-    auto extractor = pVfs->mExtractor;
-    auto index = AMediaCodec_dequeueInputBuffer(decoder, CODEC_WAIT_TIMEOUT);
-
-    if (index >= 0) {
-        size_t buffSize;
-
-        auto buf = AMediaCodec_getInputBuffer(decoder, (size_t) index, &buffSize);
-        auto sampleSize = AMediaExtractor_readSampleData(extractor, buf, buffSize);
-        auto ptUs = AMediaExtractor_getSampleTime(extractor);
-        auto flag = AMediaExtractor_getSampleFlags(extractor);
-
-        if (sampleSize > 0) {
-            AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, (size_t) sampleSize,
-                                         (uint64_t) ptUs, flag);
-        } else {
-            AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, 0, 0,
-                                         AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM);
-            return -1;
-        }
-    }
-
-    return index;
-}
-
-void DecodeThread::dequeueOutputBuffer(VideoFrameSource *pSource) {
-    if (!pSource->mDecoderRun) {
-        pSource->onDequeueOutpuBuffer();
-    }
-    auto decoder = pSource->mDecoder;
+void DecodeThread::requestFrame(RenderResRequest *rrr) {
+    post(kWhatRequestFrame, rrr);
 
 }
+
+void DecodeThread::handleRequestFrame(RenderResRequest *pRequest) {
+    auto pFs = pRequest->task->getFrameSourceAt(pRequest->resIndex);
+    pFs->requestFrame(this, [this, pRequest]GET_FRAME_CALLBACK {
+        auto pbo = mUploader->uploadFrame(buf, (size_t) size);
+        pRequest->task->setReadyPboRes(pbo, pRequest->resIndex);
+    });
+}
+
+void DecodeThread::prepareRes(IFrameSource *pSource) {
+    post(kWhatPrepareRes, pSource);
+}
+
+void DecodeThread::queueInputBuffer(VideoFrameSource *pVfs) {
+    post(kWhatQueueInputBuffer, pVfs);
+}
+
+
 

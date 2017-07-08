@@ -7,8 +7,14 @@
 
 #include <algorithm>
 #include <functional>
+#include <media/NdkMediaCodec.h>
 
-typedef std::function<void(void *, int)> FrameReadyCallback;
+#define GET_FRAME_CALLBACK (int index, void *buf, int size, AMediaCodecBufferInfo *info) -> void
+
+typedef std::function<void(int index, void *buf, int size,
+                           AMediaCodecBufferInfo *info)> GetFrameCallback;
+
+class DecodeThread;
 
 class IFrameSource {
 
@@ -21,13 +27,17 @@ public:
     IFrameSource(long startMills, long endMills);
 
 
-    virtual bool prepare() = 0;
+    virtual bool prepare(DecodeThread *decodeThread) = 0;
 
-    virtual bool requestFrame() = 0;
+    virtual bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) = 0;
 
     virtual bool isOk() = 0;
 
-    void setCallback(const FrameReadyCallback &callback);
+    virtual bool isPrepared() = 0;
+
+    virtual bool isVideo() = 0;
+
+    virtual bool skipOneFrame() = 0;
 
     long getStartUs() const;
 
@@ -61,6 +71,7 @@ protected:
     long mStartUs = -1;
     long mEndUs = -1;
 
+
 //    long mFrameStartMills;
 //
 //    long mFirstFrameUs;
@@ -74,7 +85,6 @@ protected:
 //     */
 //    long mPlayEndMills;
 
-    FrameReadyCallback mCallback;
 };
 
 #endif //MUSES_IFRAMESOURCE_H

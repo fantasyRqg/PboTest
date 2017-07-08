@@ -5,29 +5,39 @@
 #include "Effect.h"
 
 
-long Effect::getStartTimeMills() const {
-    return mStartTimeMills;
+long Effect::getStartTimeUs() const {
+    return mStartTimeUs;
 }
 
-long Effect::getEndTimeMills() const {
-    return mEndTimeMills;
+long Effect::getEndTimeUs() const {
+    return mEndTimeUs;
 }
 
-Effect::Effect(long startTimeMills, long endTimeMills) : mStartTimeMills(
-        startTimeMills), mEndTimeMills(endTimeMills) {
+Effect::Effect(long startTimeUs, long endTimeUs) : mStartTimeUs(
+        startTimeUs), mEndTimeUs(endTimeUs) {
 
-
-}
-
-Effect::Effect(long durationMills) {
 
 }
 
-bool Effect::offsetTime(long offsetMills) {
-    if (mStartTimeMills + offsetMills < 0)
+Effect::Effect(long durationUs) {
+    mStartTimeUs = 0;
+}
+
+bool Effect::offsetTime(long offsetUs) {
+    if (mStartTimeUs + offsetUs < 0)
         return false;
 
-    mStartTimeMills += offsetMills;
-    mEndTimeMills += offsetMills;
+    mStartTimeUs += offsetUs;
+    mEndTimeUs += offsetUs;
     return true;
+}
+
+RenderTask *Effect::nextRenderTask() {
+
+    return nullptr;
+}
+
+IFrameSource *Effect::getFrameSourceArray(int *out_size) {
+    *out_size = mFSArrayLen;
+    return mFrameSourcArray;
 }

@@ -12,10 +12,6 @@
 #undef TAG
 #define TAG "PboTestRender"
 
-void PboTestRender::prepareNextFrame() {
-
-}
-
 
 double randDouble() {
     return (double) std::rand() / (RAND_MAX);
@@ -227,4 +223,16 @@ bool PboTestRender::setUp(AAssetManager *amgr) {
 
 bool PboTestRender::tearDown() {
     return true;
+}
+
+void PboTestRender::prepareDrawFrame() {
+
+}
+
+void PboTestRender::setDrawPboRes(PboRes **pboReses, int len) {
+
+}
+
+int PboTestRender::getNeededPboCount() {
+    return 0;
 }

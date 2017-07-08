@@ -5,6 +5,8 @@
 #ifndef PBOTEST_VIDEOEFFECT_H
 #define PBOTEST_VIDEOEFFECT_H
 
+#include "../RenderTask.h"
+
 /**
  * 描述需要的素材情况，并组装相应的绘制工具
  *
@@ -15,25 +17,35 @@ class Effect {
 public:
 
 
-    Effect(long startTimeMills, long endTimeMills);
+    Effect(long startTimeUs, long endTimeUs);
 
 
     /**
      * start time == duration
-     * end time = durationMills
-     * @param durationMills
+     * end time = durationUs
+     * @param durationUs
      */
-    Effect(long durationMills);
+    Effect(long durationUs);
 
-    long getStartTimeMills() const;
+    long getStartTimeUs() const;
 
-    long getEndTimeMills() const;
+    long getEndTimeUs() const;
 
-    bool offsetTime(long offsetMills);
+    bool offsetTime(long offsetUs);
+
+    RenderTask *nextRenderTask();
+
+    IFrameSource *getFrameSourceArray(int *out_size);
 
 private:
-    long mStartTimeMills;
-    long mEndTimeMills;
+    long mStartTimeUs;
+    long mEndTimeUs;
+
+    IFrameSource *mFrameSourcArray;
+    int mFSArrayLen;
+
+    Render *mRenderArray;
+    int mRenderArrayLen;
 
 };
 

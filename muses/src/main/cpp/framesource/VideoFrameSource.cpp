@@ -3,7 +3,13 @@
 //
 
 #include <thread>
+#include <media/NdkMediaCodec.h>
+
 #include "VideoFrameSource.h"
+#include "DecodeThread.h"
+
+#define CODEC_WAIT_TIMEOUT 200000
+
 
 VideoFrameSource::VideoFrameSource(std::string &videoPath)
         : IFrameSource(-1, -1), mVideoPath(videoPath) {
@@ -37,13 +43,18 @@ VideoFrameSource::VideoFrameSource(std::string &videoPath)
 
 }
 
-bool VideoFrameSource::prepare() {
-    return false;
+bool VideoFrameSource::prepare(DecodeThread *decodeThread) {
+    startMediaCodec();
+    decodeThread->queueInputBuffer(this);
+    return true;
 }
 
-bool VideoFrameSource::requestFrame() {
-    return false;
+bool VideoFrameSource::requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) {
+    auto index = dequeueOutputBuffer(callback);
+    decodeThread->queueInputBuffer(this);
+    return index >= 0;
 }
+
 
 bool VideoFrameSource::isOk() {
     auto ok = mEndUs != -1 && mFrameRate != -1 && mStartUs != -1;
@@ -81,3 +92,71 @@ int VideoFrameSource::getFrameRate() const {
     return mFrameRate;
 }
 
+
+void VideoFrameSource::startMediaCodec() {
+    if (mDecoderRun) {
+        return;
+    }
+
+    mDecoder = AMediaCodec_createDecoderByType(mMimeType);
+    AMediaCodec_configure(mDecoder, mFormat, nullptr, nullptr, 0);
+    AMediaCodec_start(mDecoder);
+    mDecoderRun = true;
+}
+
+ssize_t VideoFrameSource::queueInputBuffer() {
+    auto decoder = mDecoder;
+    auto extractor = mExtractor;
+    auto index = AMediaCodec_dequeueInputBuffer(decoder, CODEC_WAIT_TIMEOUT);
+
+    if (index >= 0) {
+        size_t buffSize;
+
+        auto buf = AMediaCodec_getInputBuffer(decoder, (size_t) index, &buffSize);
+        auto sampleSize = AMediaExtractor_readSampleData(extractor, buf, buffSize);
+        auto ptUs = AMediaExtractor_getSampleTime(extractor);
+        auto flag = AMediaExtractor_getSampleFlags(extractor);
+
+        if (sampleSize > 0) {
+            AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, (size_t) sampleSize,
+                                         (uint64_t) ptUs, flag);
+        } else {
+            AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, 0, 0,
+                                         AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM);
+            return -1;
+        }
+    }
+
+    return index;
+}
+
+int VideoFrameSource::dequeueOutputBuffer(GetFrameCallback callback) {
+    if (!mDecoderRun) {
+        return -1;
+    }
+    auto decoder = mDecoder;
+    AMediaCodecBufferInfo info;
+    auto index = AMediaCodec_dequeueOutputBuffer(decoder, &info, CODEC_WAIT_TIMEOUT);
+    if (index >= 0) {
+        size_t size = 0;
+        auto buf = AMediaCodec_getOutputBuffer(decoder, (size_t) index, &size);
+
+        if (callback != nullptr)
+            callback(index, buf, size, &info);
+
+        AMediaCodec_releaseOutputBuffer(decoder, (size_t) index, false);
+    }
+    return index;
+}
+
+bool VideoFrameSource::isPrepared() {
+    return mDecoderRun;
+}
+
+bool VideoFrameSource::isVideo() {
+    return true;
+}
+
+bool VideoFrameSource::skipOneFrame() {
+    return dequeueOutputBuffer(nullptr) >= 0;
+}

@@ -8,6 +8,7 @@
 
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
+#include "../Uploader.h"
 
 class Render {
 public:
@@ -23,11 +24,23 @@ public:
 
     /**
      * assume: after Bpo upload texture via DMA, we can use CPU do something
-     *
+     * run on Painter
      */
-    virtual void prepareNextFrame() = 0;
+    virtual void prepareDrawFrame() = 0;
 
-    virtual void drawFrame(long millsecond) = 0;
+    /**
+     * 填入正在上传资源
+     * @param pbos
+     */
+    virtual void setDrawPboRes(PboRes **pboReses, int len) =0;
+
+    virtual int getNeededPboCount() = 0;
+
+    /**
+     * make sure pbo is ready ,by check pbo sync
+     * @param timeUs draw time us
+     */
+    virtual void drawFrame(long timeUs) = 0;
 
     virtual bool setUp(AAssetManager *amgr) = 0;
 
@@ -42,7 +55,6 @@ public:
 protected:
     int mZOrder;
     bool mRenderFbo = false;
-
 };
 
 
