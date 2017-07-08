@@ -6,6 +6,7 @@
 #define PBOTEST_VIDEOEFFECT_H
 
 #include "../RenderTask.h"
+#include "../render/Render.h"
 
 /**
  * 描述需要的素材情况，并组装相应的绘制工具

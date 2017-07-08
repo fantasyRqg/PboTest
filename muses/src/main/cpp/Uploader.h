@@ -22,6 +22,7 @@
 #include "framesource/DecodeThread.h"
 #include "effect/Effect.h"
 
+
 class Uploader;
 
 typedef struct PboRes {
@@ -29,6 +30,8 @@ typedef struct PboRes {
     GLsync *sync;
     int state;
     Uploader *uploader;
+
+    bool isReady();
 } PboRes;
 
 

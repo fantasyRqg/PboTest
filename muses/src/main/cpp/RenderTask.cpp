@@ -4,6 +4,7 @@
 
 #include "RenderTask.h"
 #include "exception/IlleaglStateException.h"
+#include "Uploader.h"
 
 RenderTask::RenderTask(long presentTimeUs, IFrameSource **frameSourceArray, int FSArrayLen,
                        Render **renderArray, int renderArrayLen) :
@@ -65,7 +66,7 @@ RenderTask::~RenderTask() {
 
 bool RenderTask::isTaskValid() {
     for (int i = 0; i < mFSArrayLen; ++i) {
-        if (mPboResArray[i]->state != PboRes::PboResReady) {
+        if (!mPboResArray[i]->isReady()) {
             return false;
         }
     }
@@ -94,7 +95,7 @@ PboRes *RenderTask::getPboResAt(int index) {
 
 int RenderTask::getSkipFrameAt(int index) {
     if (index >= mFSArrayLen) {
-        return nullptr;
+        return 0;
     }
 
     return mSkipFrameArray[index];

@@ -3,7 +3,8 @@
 //
 
 #include "DecodeThread.h"
-#include "RenderTask.h"
+#include "../RenderTask.h"
+#include "../Uploader.h"
 
 enum {
     kWhatQueueInputBuffer,

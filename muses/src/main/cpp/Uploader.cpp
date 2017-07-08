@@ -151,9 +151,13 @@ PboRes *Uploader::uploadFrame(void *buf, size_t size) {
     req.size = size;
     req.deal = false;
 
-    std::unique_lock lock(mUploadMutex);
+    std::unique_lock<std::mutex> lock(mUploadMutex);
     post(kWhatUploadBufAndGetPbo, &req);
     mGetPboCv.wait(lock, [req]() { return req.deal; });
 
     return req.pboRes;
+}
+
+bool PboRes::isReady() {
+    return state == PboResReady;
 }

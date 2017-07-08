@@ -3,7 +3,7 @@
 //
 
 #include "EglSurfaceBase.h"
-#include "../../exception/exception.h"
+#include "../../exception/IlleaglStateException.h"
 
 #define SURFACE_EXIST "surface already created"
 

@@ -8,7 +8,8 @@
 
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
-#include "../Uploader.h"
+
+struct PboRes;
 
 class Render {
 public:
