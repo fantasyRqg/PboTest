@@ -100,21 +100,38 @@ void PboTestRender::drawFrame(long millsecond) {
         patternPixelSource(imageArray[i], imageSize, width, height, 0);
     }
 
+    auto oriSize = imageSize;
+
     for (int j = 0; j < 10; ++j) {
+
+        imageSize = oriSize - (10 - j) * 10000000;
         for (int i = 0; i < 10; ++i) {
             auto lastTime = systemnanotime();
+            auto start = lastTime;
 
+            glBindTexture(GL_TEXTURE_2D, 0);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo[i]);
-            glBindTexture(GL_TEXTURE_2D, textureId[i]);
+            LOGV("bind buf %10lld", systemnanotime() - lastTime);
+            lastTime = systemnanotime();
 
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) imageSize, imageArray[i],
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) imageSize, NULL,
                          GL_STREAM_DRAW);
-//            auto pboBufferPtr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, (GLsizeiptr) imageSize,
-//                                                 GL_MAP_WRITE_BIT);
-//
-//            memcpy(pboBufferPtr, imageArray[(i + j) % 10], imageSize);
-//
-//            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+            LOGV("glBufferData %10lld", systemnanotime() - lastTime);
+            lastTime = systemnanotime();
+
+            auto pboBufferPtr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, (GLsizeiptr) imageSize,
+                                                 GL_MAP_WRITE_BIT);
+            LOGV("map buf %10lld", systemnanotime() - lastTime);
+            lastTime = systemnanotime();
+
+            memcpy(pboBufferPtr, imageArray[(i + j) % 10], imageSize);
+            LOGV("copy buf %10lld", systemnanotime() - lastTime);
+            lastTime = systemnanotime();
+            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+            LOGV("unmap buf %10lld", systemnanotime() - lastTime);
+            lastTime = systemnanotime();
+
+
 
 //            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
 //                         0);
@@ -126,29 +143,32 @@ void PboTestRender::drawFrame(long millsecond) {
 //        glDeleteSync(sync);
 
 
-            glBindTexture(GL_TEXTURE_2D, 0);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+            LOGV("unbind buf %10lld", systemnanotime() - lastTime);
 
             auto current = systemnanotime();
-            LOGD("iter %d , cost %lld", i, current - lastTime);
+            LOGD("iter %d , cost %lld", i, current - start);
         }
 
-        glFlush();
-        glFinish();
+//        glFlush();
+//        glFinish();
 
         for (int i = 0; i < 10; ++i) {
             auto start = systemnanotime();
+            glBindTexture(GL_TEXTURE_2D, textureId[i]);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo[i]);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
             LOGV("glTexSubImage2D cost %10lld", systemnanotime() - start);
         }
 
 
-        auto start = systemnanotime();
+        auto finish = systemnanotime();
         glFlush();
         glFinish();
 
-        LOGI("finish cost = %10lld", systemnanotime() - start);
+        LOGI("finish cost = %10lld", systemnanotime() - finish);
     }
 
 //    LOGI("with out pbo");
