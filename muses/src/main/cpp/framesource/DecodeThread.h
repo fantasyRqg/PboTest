@@ -19,12 +19,7 @@ class Uploader;
 
 class RenderTask;
 
-typedef struct RenderResRequest {
-    RenderResRequest(RenderTask *task, int resIndex);
-
-    RenderTask *task;
-    int resIndex;
-} RenderResRequest;
+struct RenderResRequest;
 
 class DecodeThread : public Looper {
 public:
@@ -41,6 +36,8 @@ public:
     void requestFrame(RenderResRequest *pRequest);
 
     void queueInputBuffer(VideoFrameSource *pVfs);
+
+    void bindUploader(Uploader *uploader);
 
 private:
 

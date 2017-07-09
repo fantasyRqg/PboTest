@@ -27,11 +27,14 @@ RenderTask::RenderTask(long presentTimeUs, IFrameSource **frameSourceArray, int 
 
     mPboResArray = new PboRes *[mFSArrayLen];
     mSkipFrameArray = new int[mFSArrayLen];
+    mProcessedMark = new bool[mFSArrayLen];
 
     for (int i = 0; i < mFSArrayLen; ++i) {
         mPboResArray[i] = nullptr;
         mSkipFrameArray[i] = 0;
+        mProcessedMark[i] = false;
     }
+
 }
 
 void RenderTask::draw() {
@@ -39,22 +42,22 @@ void RenderTask::draw() {
         mRenderArray[i]->drawFrame(mPresentTimeUs);
     }
 }
+//
+//void RenderTask::prepareDrawFrame() {
+//    for (int i = 0; i < mRenderArrayLen; ++i) {
+//        mRenderArray[i]->prepareDrawFrame();
+//    }
+//}
 
-void RenderTask::prepareDrawFrame() {
-    for (int i = 0; i < mRenderArrayLen; ++i) {
-        mRenderArray[i]->prepareDrawFrame();
-    }
-}
-
-void RenderTask::setDrawPboRes() {
-    auto fsCount = 0;
-    for (int i = 0; i < mRenderArrayLen; ++i) {
-        mRenderArray[i]->setDrawPboRes(mPboResArray + fsCount,
-                                       mRenderArray[i]->getNeededPboCount());
-    }
-
-    mPboResArray[0]->sync;
-}
+//void RenderTask::setDrawPboRes() {
+//    auto fsCount = 0;
+//    for (int i = 0; i < mRenderArrayLen; ++i) {
+//        mRenderArray[i]->setDrawPboRes(mPboResArray + fsCount,
+//                                       mRenderArray[i]->getNeededPboCount());
+//    }
+//
+//    mPboResArray[0]->sync;
+//}
 
 RenderTask::~RenderTask() {
     if (mPboResArray != nullptr)
@@ -62,11 +65,15 @@ RenderTask::~RenderTask() {
 
     if (mSkipFrameArray != nullptr)
         delete[] mSkipFrameArray;
+
+    if (mProcessedMark != nullptr) {
+        delete[] mProcessedMark;
+    }
 }
 
 bool RenderTask::isTaskValid() {
     for (int i = 0; i < mFSArrayLen; ++i) {
-        if (!mPboResArray[i]->isReady()) {
+        if (mPboResArray[i] == nullptr || !mPboResArray[i]->isReady()) {
             return false;
         }
     }
@@ -103,4 +110,22 @@ int RenderTask::getSkipFrameAt(int index) {
 
 void RenderTask::setReadyPboRes(PboRes *pRes, int i) {
     mPboResArray[i] = pRes;
+    mProcessedMark[i] = true;
 }
+
+bool RenderTask::isAllResProcessed() {
+    for (int i = 0; i < mFSArrayLen; ++i) {
+        if (!mProcessedMark[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+//
+//bool RenderTask::isSkipped() const {
+//    return mSkipped;
+//}
+//
+//void RenderTask::setSkipped(bool skipped) {
+//    mSkipped = skipped;
+//}

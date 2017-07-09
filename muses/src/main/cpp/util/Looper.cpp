@@ -54,16 +54,20 @@ void Looper::post(int what, void *data) {
 
 void Looper::quit() {
     if (mRunning) {
-        auto msg = new LooperMessage();
-        msg->data = nullptr;
-        msg->what = -1;
-        msg->quit = true;
-        tailAppendMessage(msg);
+        postQuit();
         mWorkThread->join();
         delete (mWorkThread);
         mRunning = false;
     }
 
+}
+
+void Looper::postQuit() {
+    auto msg = new LooperMessage();
+    msg->data = nullptr;
+    msg->what = -1;
+    msg->quit = true;
+    tailAppendMessage(msg);
 }
 
 

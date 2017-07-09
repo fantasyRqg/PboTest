@@ -26,10 +26,11 @@ public:
     void post(int what, void *data);
 
 
-    void quit();
+    virtual void quit();
 
     virtual void handle(int what, void *data) = 0;
 
+    void postQuit();
 
 
 private:

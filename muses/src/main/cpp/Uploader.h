@@ -27,13 +27,20 @@ class Uploader;
 
 typedef struct PboRes {
     GLuint pbo;
-    GLsync *sync;
+    GLsync sync;
     int state;
 //    Uploader *uploader;
 
     bool isReady();
 } PboRes;
 
+
+typedef struct RenderResRequest {
+    RenderResRequest(RenderTask *task, int resIndex);
+
+    RenderTask *task;
+    int resIndex;
+} RenderResRequest;
 
 class UploadReq;
 
@@ -43,13 +50,20 @@ public:
 
     virtual ~Uploader();
 
-    Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread);
+    Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread,
+             size_t pboLen = 8);
 
     void handle(int what, void *data) override;
 
     PboRes *uploadFrame(void *buf, size_t size);
 
     void releaseBuffer(PboRes *pboRes);
+
+    void dataFillSuccess(RenderResRequest *pRequest);
+
+    void dataFillFail(RenderResRequest *pRequest);
+
+    void quit() override;
 
 private:
     EglCore *mEglCore;
@@ -72,6 +86,12 @@ private:
     void handleUploadAndGetPboBuf(UploadReq *pReq);
 
     void handleReleasePboBuf(PboRes *pRes);
+
+    void handleDataFillReady(RenderResRequest *pRequest);
+
+    void handleDataFillFail(RenderResRequest *pRequest);
+
+    void handleDestroyPboBuf();
 };
 
 

@@ -3,23 +3,28 @@
 //
 
 #include "Uploader.h"
+#include "util/common.h"
+
+#undef TAG
+#define TAG "Uploader"
 
 enum {
     kWhatStart,
     kWhatUploadBufAndGetPbo,
     kWhatReleasePboBuf,
-    kWhatUnmapPboAndCheckDrawFire,
+    kWhatDrawFire,
     kWhatRequestRenderRes,
     kWhatDataFillReady,
     kWhatDataFillFail,
     kWhatPrepareFrameSource,
+    kWhatDestroyPboBuf,
 };
 
 enum {
     PboResReady,
     PboResNotUsed,
-    PboResInvalid,
-    PboResPrepareing
+//    PboResInvalid,
+            PboResPreparing
 };
 
 typedef struct UploadReq {
@@ -40,17 +45,23 @@ void Uploader::handle(int what, void *data) {
         case kWhatReleasePboBuf:
             handleReleasePboBuf((PboRes *) data);
             break;
-        case kWhatUnmapPboAndCheckDrawFire:
+        case kWhatDrawFire:
+            mPainter->postDrawRenderTask((RenderTask *) data);
             break;
         case kWhatRequestRenderRes:
             requestRenderRes((RenderTask *) data);
             break;
         case kWhatDataFillReady:
+            handleDataFillReady((RenderResRequest *) data);
             break;
         case kWhatDataFillFail:
+            handleDataFillFail((RenderResRequest *) data);
             break;
         case kWhatPrepareFrameSource:
             prepareFrameSource((Effect *) data);
+            break;
+        case kWhatDestroyPboBuf:
+            handleDestroyPboBuf();
             break;
         default:
             break;
@@ -62,15 +73,43 @@ Uploader::~Uploader() {
 
     if (mEglCore != nullptr)
         mEglCore->tearDown();
+
 }
 
-Uploader::Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread)
+Uploader::Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread,
+                   size_t pboLen)
         : Looper(), mPainter(painter), mDecodeThread(decodeThread) {
+
+    mPainter->bindUploader(this);
+    mDecodeThread->bindUploader(this);
+
+    mArrayLen = pboLen;
     post(kWhatStart, sharedContext);
 }
 
 void Uploader::startUploader(EGLContext *sharedContext) {
     mEglCore = new EglCore(sharedContext);
+    try {
+        mEglCore->makeCurrent(EGL_NO_DISPLAY);
+    } catch (std::runtime_error e) {
+        LOGE("make current error : %s", e.what());
+        postQuit();
+        return;
+    }
+
+
+    mPboResArray = new PboRes[mArrayLen];
+
+    GLuint pboIds[mArrayLen];
+    glGenBuffers(mArrayLen, pboIds);
+
+    for (int i = 0; i < mArrayLen; ++i) {
+        auto br = mPboResArray[i];
+
+        br.sync = nullptr;
+        br.state = PboResNotUsed;
+        br.pbo = pboIds[i];
+    }
 }
 
 void Uploader::requestRenderRes(RenderTask *pTask) {
@@ -97,25 +136,6 @@ void Uploader::prepareFrameSource(Effect *pEffect) {
 RenderResRequest::RenderResRequest(RenderTask *task, int resIndex) : task(task),
                                                                      resIndex(resIndex) {}
 
-//
-//PboRes *Uploader::getBuffer() {
-//    std::unique_lock lock(mGetPboMuxtex);
-//    GetBufReq getBufReq;
-//    getBufReq.pboRes = nullptr;
-//    post(kWhatGetPboBuf, &getBufReq);
-//
-//    mGetPboCv.wait(lock, [getBufReq]() { return getBufReq.pboRes != nullptr; });
-//
-//    return getBufReq.pboRes;
-//}
-//
-//void Uploader::queueBuffer(RenderResRequest *pRequest) {
-//    auto pboRes = pRequest->task->getPboResAt(pRequest->resIndex);
-//
-//    glUnmapBuffer(pboRes->pbo);
-//}
-
-
 void Uploader::releaseBuffer(PboRes *pboRes) {
     post(kWhatReleasePboBuf, pboRes);
 }
@@ -134,7 +154,7 @@ void Uploader::handleUploadAndGetPboBuf(UploadReq *pReq) {
     PboRes *pboRes = nullptr;
     for (int i = 0; i < mArrayLen; ++i) {
         if (mPboResArray[i].state == PboResNotUsed) {
-            mPboResArray[i].state = PboResPrepareing;
+            mPboResArray[i].state = PboResPreparing;
             pboRes = &mPboResArray[i];
 
             break;
@@ -148,7 +168,9 @@ void Uploader::handleUploadAndGetPboBuf(UploadReq *pReq) {
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboRes->pbo);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) pReq->size, pReq->buf, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     pboRes->state = PboResReady;
+    pboRes->sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     pReq->pboRes = pboRes;
     mGetPboCv.notify_all();
 }
@@ -166,6 +188,52 @@ PboRes *Uploader::uploadFrame(void *buf, size_t size) {
     mGetPboCv.wait(lock, [req]() { return req.deal; });
 
     return req.pboRes;
+}
+
+void Uploader::dataFillSuccess(RenderResRequest *pRequest) {
+    post(kWhatDataFillReady, pRequest);
+}
+
+void Uploader::dataFillFail(RenderResRequest *pRequest) {
+    post(kWhatDataFillFail, pRequest);
+}
+
+void Uploader::handleDataFillReady(RenderResRequest *pRequest) {
+    auto task = pRequest->task;
+    if (task->isTaskValid()) {
+        post(kWhatDrawFire, task);
+    }
+
+    delete pRequest;
+
+    if (task->isAllResProcessed() && !task->isTaskValid()) {
+        delete task;
+    }
+
+}
+
+void Uploader::handleDataFillFail(RenderResRequest *pRequest) {
+    auto task = pRequest->task;
+    task->setReadyPboRes(nullptr, pRequest->resIndex);
+
+    if (task->isAllResProcessed()) {
+        delete task;
+    }
+}
+
+void Uploader::handleDestroyPboBuf() {
+    GLuint pboIds[mArrayLen];
+    for (int i = 0; i < mArrayLen; ++i) {
+        pboIds[i] = mPboResArray[i].pbo;
+    }
+
+    glDeleteBuffers(mArrayLen, pboIds);
+    delete[] mPboResArray;
+}
+
+void Uploader::quit() {
+    post(kWhatReleasePboBuf, nullptr);
+    Looper::quit();
 }
 
 bool PboRes::isReady() {

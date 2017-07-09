@@ -16,9 +16,9 @@ public:
 
     void draw();
 
-    void prepareDrawFrame();
-
-    void setDrawPboRes();
+//    void prepareDrawFrame();
+//
+//    void setDrawPboRes();
 
     bool isTaskValid();
 
@@ -34,9 +34,13 @@ public:
 
     void setReadyPboRes(PboRes *pRes, int i);
 
+    bool isAllResProcessed();
+
+
 private:
     long mPresentTimeUs;
     IFrameSource **mFrameSourceArray;
+    bool *mProcessedMark;
     int mFSArrayLen;
 
     Render **mRenderArray;
@@ -45,6 +49,16 @@ private:
 
     int *mSkipFrameArray;
     PboRes **mPboResArray;
+
+//    /**
+//     * mark whether skip this render task, use for when error occur on load resources or on draw
+//     * mark true to skip this render task
+//     */
+//    bool mSkipped = false;
+//public:
+//    bool isSkipped() const;
+//
+//    void setSkipped(bool skipped);
 
 };
 

@@ -69,7 +69,13 @@ void DecodeThread::handleRequestFrame(RenderResRequest *pRequest) {
     auto pFs = pRequest->task->getFrameSourceAt(pRequest->resIndex);
     pFs->requestFrame(this, [this, pRequest]GET_FRAME_CALLBACK {
         auto pbo = mUploader->uploadFrame(buf, (size_t) size);
-        pRequest->task->setReadyPboRes(pbo, pRequest->resIndex);
+        if (pbo != nullptr) {
+            pRequest->task->setReadyPboRes(pbo, pRequest->resIndex);
+            mUploader->dataFillSuccess(pRequest);
+        } else {
+            pRequest->task->setReadyPboRes(nullptr, pRequest->resIndex);
+            mUploader->dataFillFail(pRequest);
+        }
     });
 }
 
@@ -79,6 +85,10 @@ void DecodeThread::prepareRes(IFrameSource *pSource) {
 
 void DecodeThread::queueInputBuffer(VideoFrameSource *pVfs) {
     post(kWhatQueueInputBuffer, pVfs);
+}
+
+void DecodeThread::bindUploader(Uploader *uploader) {
+    mUploader = uploader;
 }
 
 
