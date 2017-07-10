@@ -49,6 +49,8 @@ public:
 
     std::vector<std::shared_ptr<Render>> getRenderVector();
 
+    void setPrepared(bool prepared);
+
 protected:
     long mStartTimeUs;
     long mEndTimeUs;
@@ -56,6 +58,8 @@ protected:
      * already displayed time
      */
     long mRunUs;
+
+    bool mPrepared = false;
 
     std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
 

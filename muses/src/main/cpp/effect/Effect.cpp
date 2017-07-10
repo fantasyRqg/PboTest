@@ -21,6 +21,8 @@ Effect::Effect(long startTimeUs, long endTimeUs) : mStartTimeUs(
 
 Effect::Effect(long durationUs) {
     mStartTimeUs = 0;
+    mEndTimeUs = durationUs;
+    mRunUs = 0;
 }
 
 bool Effect::offsetTime(long offsetUs) {
@@ -46,15 +48,14 @@ std::vector<std::shared_ptr<Render>> Effect::getRenderVector() {
 }
 
 bool Effect::isPrepared() {
-    for (auto ifs : mFrameSourceVector) {
-        if (!ifs->isPrepared()) {
-            return false;
-        }
-    }
-    return true;
+    return mPrepared;
 }
 
 
 bool Effect::hasNextFrame() {
-    return mStartTimeUs + mRunUs > mEndTimeUs;
+    return mStartTimeUs + mRunUs <= mEndTimeUs;
+}
+
+void Effect::setPrepared(bool prepared) {
+    mPrepared = prepared;
 }

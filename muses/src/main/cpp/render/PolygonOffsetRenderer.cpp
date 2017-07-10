@@ -22,15 +22,18 @@ int PolygonOffsetRenderer::getNeededPboCount() {
 }
 
 void PolygonOffsetRenderer::drawFrame(long timeUs) {
+    glCommon::checkGlError("drawFrame");
 
     glUseProgram(mProgram);
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
+    glCommon::checkGlError("glBindBuffer");
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0,
                           (const void *) (sizeof(GLfloat) * 3 * 4 * 2));
+    glCommon::checkGlError("glVertexAttribPointer");
 
     glm::mat4 mvp = mProjMatrix * mViewMatrix *
                     glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs) * 0.1f),
@@ -41,6 +44,7 @@ void PolygonOffsetRenderer::drawFrame(long timeUs) {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicatesVbo[1]);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, NULL);
+    glCommon::checkGlError("glDrawElements");
 
 //    glDepthFunc(GL_LEQUAL);
 //
@@ -50,6 +54,8 @@ void PolygonOffsetRenderer::drawFrame(long timeUs) {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicatesVbo[0]);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, NULL);
+    glCommon::checkGlError("glDrawElements 2");
+
 }
 
 bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) {
@@ -130,6 +136,8 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
     );
 
     glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
+    LOGV("render set up");
+    glCommon::checkGlError("set up");
     return true;
 }
 

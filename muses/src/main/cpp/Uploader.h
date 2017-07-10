@@ -75,16 +75,19 @@ public:
     void releaseEffect(Effect *pEffect);
 
 private:
-    EglCore *mEglCore;
+    EglCore *mEglCore = nullptr;
 
-    PboRes *mPboResArray;
+    PboRes *mPboResArray = nullptr;
     int mArrayLen;
-    Painter *mPainter;
-    DecodeThread *mDecodeThread;
-    Player *mPlayer;
+    Painter *mPainter = nullptr;
+    DecodeThread *mDecodeThread = nullptr;
+    Player *mPlayer = nullptr;
 
     std::mutex mUploadMutex;
     std::condition_variable mGetPboCv;
+
+    std::mutex mStartLock;
+    std::condition_variable mStartedCv;
 
     std::queue<UploadReq *> mPendingReqs;
 

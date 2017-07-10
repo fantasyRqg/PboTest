@@ -21,6 +21,18 @@ enum {
     kWhatOnError,
 };
 
+std::string PlayerEnumStr[]{
+        "kWhatPlay",
+        "kWhatStopCurrent",
+        "kWhatPause",
+        "kWhatResume",
+        "kWhatSeek",
+        "kWhatReplay",
+        "kWhatSpeedChange",
+        "kWhatNextFrame",
+        "kWhatOnError",
+};
+
 typedef struct Player::SeekReq {
     long timeUs;
 } SeekReq;
@@ -74,6 +86,7 @@ void Player::postOnError(std::runtime_error *pError) {
 
 
 void Player::handle(int what, void *data) {
+    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
     switch (what) {
         case kWhatPlay:
             handlePlay((EffectManager *) data);
@@ -162,8 +175,9 @@ void Player::playOneFrame(EffectManager *pManager) {
     auto effect = pManager->getEffect();
 
     if (effect != nullptr && effect->hasNextFrame()) {
-        if (effect->isPrepared()) {
+        if (!effect->isPrepared()) {
             mUploader->prepareEffect(effect);
+            effect->setPrepared(true);
         }
 
         auto task = effect->nextRenderTask();
@@ -180,6 +194,7 @@ void Player::playOneFrame(EffectManager *pManager) {
 void Player::advanceEffectManager(EffectManager *pManager, Effect *effect) {
     if (effect != nullptr) {
         mUploader->releaseEffect(effect);
+        effect->setPrepared(false);
     }
 
     if (pManager->advance()) {

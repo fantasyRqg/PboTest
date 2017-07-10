@@ -6,9 +6,10 @@
 #include "Painter.h"
 #include "Uploader.h"
 #include "gl/surface/WindowSurface.h"
+#include "util/common.h"
 
-//#undef TAG
-//#define TAG "Painter"
+#undef TAG
+#define TAG "Painter"
 
 enum {
     kWhatStart,
@@ -21,6 +22,17 @@ enum {
     kWhatRenderTearDown,
 };
 
+std::string painterStr[]{
+        "kWhatStart",
+        "kWhatStopCurrent",
+        "kWhatDrawRenderTask",
+        "kWhatCreateWindowSurface",
+        "kWhatCreateOffScreenSurface",
+        "kWhatDestroySurface",
+        "kWhatRenderSetup",
+        "kWhatRenderTearDown",
+};
+
 Painter::Painter(AAssetManager *assetManager) : Looper("Painter"), mAssetManager(assetManager) {
 
 }
@@ -31,6 +43,7 @@ void Painter::postDrawRenderTask(RenderTask *task) {
 }
 
 void Painter::handle(int what, void *data) {
+    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
 
     switch (what) {
         case kWhatStart:
@@ -70,6 +83,7 @@ void Painter::handle(int what, void *data) {
 }
 
 void Painter::handleDrawRenderTask(RenderTask *pTask) {
+    LOGD("handleDrawRenderTask");
     pTask->draw();
 
     mEglSurface->swapBuffers();
@@ -116,6 +130,7 @@ void Painter::handleCreateOffScreenSurface() {
 }
 
 void Painter::handleDestroySurface() {
+    LOGD("handleDestroySurface");
     if (mEglSurface != nullptr) {
         mEglSurface->release();
         delete mEglSurface;
@@ -128,22 +143,22 @@ Painter::~Painter() {
 
 
 void Painter::tearDownRender(Effect *pEffect) {
-    post(kWhatRenderSetup, pEffect);
+    post(kWhatRenderTearDown, pEffect);
 }
 
 void Painter::setUpRender(Effect *pEffect) {
-    post(kWhatRenderTearDown, pEffect);
+    post(kWhatRenderSetup, pEffect);
 }
 
 void Painter::handleRenderTearDown(Effect *pEffect) {
     for (auto r : pEffect->getRenderVector()) {
-        r->setUp(mAssetManager, mEglSurface);
+        r->tearDown();
     }
 }
 
 void Painter::handleRenderSetup(Effect *pEffect) {
     for (auto r: pEffect->getRenderVector()) {
-        r->tearDown();
+        r->setUp(mAssetManager, mEglSurface);
     }
 }
 

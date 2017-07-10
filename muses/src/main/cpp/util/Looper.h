@@ -48,7 +48,6 @@ private:
     std::mutex mQueueLock;
     std::condition_variable mNewMsgCv;
 
-
     bool mRunning;
 
 };

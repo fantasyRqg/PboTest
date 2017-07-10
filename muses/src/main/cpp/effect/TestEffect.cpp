@@ -13,6 +13,7 @@ TestEffect::TestEffect(long durationUs) : Effect(durationUs) {
 }
 
 RenderTask *TestEffect::nextRenderTask() {
+    mRunUs += 416666;
     return new RenderTask((long) (glCommon::systemnanotime() / 1000L), mFrameSourceVector,
                           mRenderVector);
 }

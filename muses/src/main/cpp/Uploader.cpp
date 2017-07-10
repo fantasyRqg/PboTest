@@ -22,6 +22,20 @@ enum {
     kWhatOnError,
 };
 
+std::string enumStr[] = {
+        "kWhatStart",
+        "kWhatUploadBufAndGetPbo",
+        "kWhatReleasePboBuf",
+        "kWhatDrawFire",
+        "kWhatRequestRenderRes",
+        "kWhatDataFillReady",
+        "kWhatDataFillFail",
+        "kWhatPrepareEffect",
+        "kWhatReleaseEffect",
+        "kWhatDestroyPboBuf",
+        "kWhatOnError",
+};
+
 enum {
     PboResReady,
     PboResNotUsed,
@@ -36,6 +50,7 @@ typedef struct UploadReq {
 } UploadReq;
 
 void Uploader::handle(int what, void *data) {
+    LOGD("handle what = %s", enumStr[what].c_str());
     switch (what) {
         case kWhatStart:
             handleStartUploader((EGLContext *) data);
@@ -93,8 +108,12 @@ Uploader::Uploader(Painter *painter, DecodeThread *decodeThread, Player *player,
 
     mPainter->bindUploader(this);
     mDecodeThread->bindUploader(this);
+    mPlayer->bindUploader(this);
 
     mArrayLen = pboLen;
+
+    std::unique_lock<std::mutex> lock(mStartLock);
+    mStartedCv.wait(lock, [this]() { return mEglCore != nullptr; });
 
 }
 
@@ -128,14 +147,21 @@ void Uploader::handleStartUploader(EGLContext sharedContext) {
         br.state = PboResNotUsed;
         br.pbo = pboIds[i];
     }
+
+    mStartedCv.notify_all();
 }
 
 void Uploader::handleRequestRenderRes(RenderTask *pTask) {
     int size = pTask->getFrameSourceVector().size();
 
 
-    for (int i = 0; i < size; ++i) {
-        mDecodeThread->requestFrame(new RenderResRequest(pTask, i));
+    if (size > 0) {
+
+        for (int i = 0; i < size; ++i) {
+            mDecodeThread->requestFrame(new RenderResRequest(pTask, i));
+        }
+    } else {
+        post(kWhatDrawFire, pTask);
     }
 }
 

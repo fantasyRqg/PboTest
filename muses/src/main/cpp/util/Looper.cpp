@@ -3,7 +3,6 @@
 //
 
 #include "Looper.h"
-#include "common.h"
 
 #undef TAG
 #define TAG "Looper"
@@ -26,11 +25,9 @@ void Looper::loop() {
         mMsgQueue.pop();
         lock.unlock();
 
-        LOGD("%s what = %d ", mName.c_str(), msg->what);
 
         handle(msg->what, msg->data);
 
-        LOGV("%s what = %d ", mName.c_str(), msg->what);
 
         if (msg->quit) {
             delete (msg);
@@ -74,14 +71,9 @@ void Looper::postQuit() {
 
 
 void Looper::tailAppendMessage(LooperMessage *message) {
-    LOGD("tailAppendMessage %s what = %d", mName.c_str(), message->what);
-
     std::unique_lock<std::mutex> lock(mQueueLock);
     mMsgQueue.push(message);
     mNewMsgCv.notify_one();
-
-    LOGV("tailAppendMessage %s what = %d ", mName.c_str(), message->what);
-
 }
 
 Looper::Looper(const std::string &name) : mName(name) {
