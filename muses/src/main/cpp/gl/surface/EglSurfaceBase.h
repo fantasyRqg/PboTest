@@ -11,11 +11,12 @@ class EglSurfaceBase {
 public:
     EglSurfaceBase(EglCore *eglCore);
 
+    virtual ~EglSurfaceBase();
+
     int getWidth() const;
 
     int getHeight() const;
 
-    void releaseEglSurface();
 
     void makeCurrent();
 
@@ -29,7 +30,11 @@ public:
 
     virtual void release() = 0;
 
+    float getAspect();
+
 protected:
+    void releaseEglSurface();
+
     void createWindowSurface(EGLNativeWindowType window);
 
     void createOffscreenSurface(int width, int height);

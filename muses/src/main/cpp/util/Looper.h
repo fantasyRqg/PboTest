@@ -28,10 +28,11 @@ public:
 
     virtual void quit();
 
-    virtual void handle(int what, void *data) = 0;
 
     void postQuit();
 
+protected:
+    virtual void handle(int what, void *data) = 0;
 
 private:
     void tailAppendMessage(LooperMessage *message);

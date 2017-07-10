@@ -21,6 +21,8 @@ class RenderTask;
 
 struct RenderResRequest;
 
+struct SkipReq;
+
 class DecodeThread : public Looper {
 public:
 
@@ -29,7 +31,6 @@ public:
 
     virtual ~DecodeThread();
 
-    void handle(int what, void *data) override;
 
     void prepareRes(IFrameSource *pSource);
 
@@ -40,11 +41,14 @@ public:
     void bindUploader(Uploader *uploader);
 
 private:
+    void handle(int what, void *data) override;
 
     Uploader *mUploader;
 
 
     void handleRequestFrame(RenderResRequest *pRequest);
+
+    void handleSkipFrame(SkipReq *pReq);
 };
 
 

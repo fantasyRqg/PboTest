@@ -7,13 +7,14 @@
 
 
 #include "Render.h"
+#include "../gl/surface/EglSurfaceBase.h"
 
 class PboTestRender : public Render {
 public:
 
     void drawFrame(long millsecond) override;
 
-    bool setUp(AAssetManager *amgr) override;
+    bool setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) override;
 
     bool tearDown() override;
 
@@ -25,11 +26,11 @@ public:
 
 
 private:
-    GLuint mProgramId;
     GLuint mVertexArrayId;
-    GLuint mVertexBufferId;
-
-    GLuint mPbo;
+//    GLuint mProgramId;
+//    GLuint mVertexBufferId;
+//
+//    GLuint mPbo;
 
     void createBpo(size_t imageSize, const GLuint *pbo, int index) const;
 };

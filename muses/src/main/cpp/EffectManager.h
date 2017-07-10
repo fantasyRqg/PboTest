@@ -23,6 +23,14 @@ public:
 
     int getOutFrameRate() const;
 
+    /**
+     * to next effect
+     * @return has next effect
+     */
+    bool advadce();
+
+    bool getEffect();
+
 
 private:
 

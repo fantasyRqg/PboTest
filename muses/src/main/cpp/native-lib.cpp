@@ -2,11 +2,14 @@
 #include <string>
 #include <android/asset_manager_jni.h>
 #include <thread>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+
 
 #include "gl/EglCore.h"
-#include "util/common.h"
-
-#include "render/PboTestRender.h"
+#include "framesource/DecodeThread.h"
+#include "Painter.h"
+#include "Uploader.h"
 
 #undef TAG
 #define TAG "native-lib"
@@ -30,31 +33,21 @@ Java_rqg_fantasy_muses_Native_testMuses(JNIEnv *env, jclass type, jobject assetM
     AAssetManager *as = AAssetManager_fromJava(env, assetManager);
 
 
-    new std::thread([as]() {
-        LOGD("egl setup");
-        EglCore *eglCore;
-        try {
-            eglCore = new EglCore();
-        } catch (std::runtime_error e) {
-            LOGE("egl core setup error : %s", e.what());
-            return;
-        }
+}extern "C"
+JNIEXPORT void JNICALL
+Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject assetManager,
+                                               jobject surface) {
 
-        eglCore->makeCurrent(EGL_NO_SURFACE);
+    AAssetManager *as = AAssetManager_fromJava(env, assetManager);
+    auto pWindow = ANativeWindow_fromSurface(env, surface);
 
-        eglCore->logGlInfo();
+    DecodeThread *decodeThread = new DecodeThread();
+    Painter *painter = new Painter();
+    Player *player = new Player();
+    Uploader *uploader = new Uploader(painter, decodeThread, player, 4);
 
-        PboTestRender render;
 
-        render.setUp(as);
-
-        render.drawFrame(0);
-
-        render.tearDown();
-        LOGD("egl tearDown");
-        eglCore->tearDown();
-
-        delete eglCore;
-    });
-
+//    painter->quit();
+//    uploader->quit();
+//    decodeThread->quit();
 }

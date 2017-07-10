@@ -7,6 +7,7 @@
 
 #include "../util/common.h"
 #include "PboTestRender.h"
+#include "../gl/surface/EglSurfaceBase.h"
 
 
 #undef TAG
@@ -100,27 +101,35 @@ void PboTestRender::drawFrame(long millsecond) {
         patternPixelSource(imageArray[i], imageSize, width, height, 0);
     }
 
-    auto oriSize = imageSize;
+//    auto oriSize = imageSize;
 
     for (int j = 0; j < 10; ++j) {
 
-        imageSize = oriSize - (10 - j) * 10000000;
+//        imageSize = oriSize - (10 - j) * 1000000;
         for (int i = 0; i < 10; ++i) {
             auto lastTime = systemnanotime();
             auto start = lastTime;
 
             glBindTexture(GL_TEXTURE_2D, 0);
+            glCommon::checkGlError("glBindTexture");
+
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo[i]);
+            glCommon::checkGlError("glBindBuffer");
+
             LOGV("bind buf %10lld", systemnanotime() - lastTime);
             lastTime = systemnanotime();
 
             glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) imageSize, NULL,
                          GL_STREAM_DRAW);
+            glCommon::checkGlError("glBufferData");
+
             LOGV("glBufferData %10lld", systemnanotime() - lastTime);
             lastTime = systemnanotime();
 
             auto pboBufferPtr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, (GLsizeiptr) imageSize,
                                                  GL_MAP_WRITE_BIT);
+            glCommon::checkGlError("MapBuffer");
+
             LOGV("map buf %10lld", systemnanotime() - lastTime);
             lastTime = systemnanotime();
 
@@ -150,6 +159,7 @@ void PboTestRender::drawFrame(long millsecond) {
             LOGD("iter %d , cost %lld", i, current - start);
         }
 
+        glCommon::checkGlError("after upload");
 //        glFlush();
 //        glFinish();
 
@@ -161,6 +171,8 @@ void PboTestRender::drawFrame(long millsecond) {
             glBindTexture(GL_TEXTURE_2D, 0);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
             LOGV("glTexSubImage2D cost %10lld", systemnanotime() - start);
+
+            glCommon::checkGlError("bind Texture");
         }
 
 
@@ -221,7 +233,7 @@ void PboTestRender::createBpo(size_t imageSize, const GLuint *pbo, int index) co
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-bool PboTestRender::setUp(AAssetManager *amgr) {
+bool PboTestRender::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) {
     glGenVertexArrays(1, &mVertexArrayId);
     glBindVertexArray(mVertexArrayId);
 

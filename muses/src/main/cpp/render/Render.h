@@ -8,9 +8,14 @@
 
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
+#include "../gl/surface/EglSurfaceBase.h"
 
 struct PboRes;
 
+
+/**
+ * all gl operation run
+ */
 class Render {
 public:
 
@@ -43,7 +48,7 @@ public:
      */
     virtual void drawFrame(long timeUs) = 0;
 
-    virtual bool setUp(AAssetManager *amgr) = 0;
+    virtual bool setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) = 0;
 
     virtual bool tearDown() = 0;
 
@@ -52,6 +57,8 @@ public:
     bool isRenderFbo() const;
 
     void setRenderFbo(bool renderFbo);
+
+    Render();
 
 protected:
     int mZOrder;

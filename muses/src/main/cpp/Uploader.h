@@ -21,6 +21,7 @@
 #include "Painter.h"
 #include "framesource/DecodeThread.h"
 #include "effect/Effect.h"
+#include "Player.h"
 
 
 class Uploader;
@@ -42,7 +43,7 @@ typedef struct RenderResRequest {
     int resIndex;
 } RenderResRequest;
 
-class UploadReq;
+struct UploadReq;
 
 class Uploader : public Looper {
 public:
@@ -50,10 +51,8 @@ public:
 
     virtual ~Uploader();
 
-    Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread,
-             size_t pboLen = 8);
+    Uploader(Painter *painter, DecodeThread *decodeThread, Player *player, size_t pboLen = 6);
 
-    void handle(int what, void *data) override;
 
     PboRes *uploadFrame(void *buf, size_t size);
 
@@ -63,7 +62,11 @@ public:
 
     void dataFillFail(RenderResRequest *pRequest);
 
+    void startUploader(EGLContext sharedContext);
+
     void quit() override;
+
+    void postOnError(std::runtime_error *pError);
 
 private:
     EglCore *mEglCore;
@@ -72,12 +75,16 @@ private:
     int mArrayLen;
     Painter *mPainter;
     DecodeThread *mDecodeThread;
+    Player *mPlayer;
+
     std::mutex mUploadMutex;
     std::condition_variable mGetPboCv;
 
     std::queue<UploadReq *> mPendingReqs;
 
-    void startUploader(EGLContext *sharedContext);
+    void handle(int what, void *data) override;
+
+    void handleStartUploader(EGLContext sharedContext);
 
     void requestRenderRes(RenderTask *pTask);
 

@@ -22,6 +22,13 @@ public:
 
     void appendPre(Effect *effect);
 
+    bool advance();
+
+    Effect *getCurrent();
+
+    void reset();
+
+    void seekTo(long timeUs);
 
 private:
     void appendEffectItem(EffectItem *item, EffectItem *ei);

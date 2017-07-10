@@ -32,12 +32,17 @@ bool Effect::offsetTime(long offsetUs) {
     return true;
 }
 
-RenderTask *Effect::nextRenderTask() {
 
-    return nullptr;
+std::vector<std::shared_ptr<IFrameSource>> Effect::getFrameSourceVector() {
+    return mFrameSourceVector;
 }
 
-IFrameSource *Effect::getFrameSourceArray(int *out_size) {
-    *out_size = mFSArrayLen;
-    return mFrameSourcArray;
+Effect::~Effect() {
+
 }
+
+std::vector<std::shared_ptr<Render>> Effect::getRenderVector() {
+    return mRenderVector;
+}
+
+

@@ -57,11 +57,18 @@ void EglSurfaceBase::makeCurrent() {
 }
 
 bool EglSurfaceBase::swapBuffers() {
-    mEglCore->swapBuffers(mEglSurface);
-    return false;
+    return mEglCore->swapBuffers(mEglSurface);
 }
 
 void EglSurfaceBase::setPresentationTime(long timeUs) {
     mEglCore->presentationTimeANDROID(mEglSurface, timeUs);
+}
+
+float EglSurfaceBase::getAspect() {
+    return float(getWidth()) / float(getHeight());
+}
+
+EglSurfaceBase::~EglSurfaceBase() {
+
 }
 

@@ -2,14 +2,15 @@ package rqg.fantasy.pbotest;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
+import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
-import static rqg.fantasy.muses.Native.stringFromJNI;
-import static rqg.fantasy.muses.Native.testMuses;
+import rqg.fantasy.muses.Native;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Used to load the 'native-lib' library on application startup.
+    private static final String TAG = "MainActivity";
 
 
     @Override
@@ -18,10 +19,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Example of a call to a native method
-        TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+        SurfaceView surfaceView = findViewById(R.id.sample_surface);
 
-        testMuses(getAssets());
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback2() {
+            @Override
+            public void surfaceRedrawNeeded(SurfaceHolder surfaceHolder) {
+                Log.d(TAG, "surfaceRedrawNeeded() called with: surfaceHolder = [" + surfaceHolder + "]");
+            }
+
+            @Override
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                Log.d(TAG, "surfaceCreated() called with: surfaceHolder = [" + surfaceHolder + "]");
+                Native.onSurfaceCreated(getAssets(), surfaceHolder.getSurface());
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+                Log.d(TAG, "surfaceChanged() called with: surfaceHolder = [" + surfaceHolder + "], i = [" + i + "], i1 = [" + i1 + "], i2 = [" + i2 + "]");
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+                Log.d(TAG, "surfaceDestroyed() called with: surfaceHolder = [" + surfaceHolder + "]");
+            }
+        });
     }
 
 

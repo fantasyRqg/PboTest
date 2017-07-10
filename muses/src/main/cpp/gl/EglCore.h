@@ -54,6 +54,8 @@ public:
      */
     void makeNothingCurrent();
 
+    EGLContext  getEglContext();
+
     void logGlInfo();
 
 protected:

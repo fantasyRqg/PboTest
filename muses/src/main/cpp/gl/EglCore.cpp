@@ -174,6 +174,9 @@ void EglCore::makeNothingCurrent() {
     if (!eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
         throw std::runtime_error("eglMakeCurrent failed");
     }
+}
 
+EGLContext EglCore::getEglContext() {
+    return mEglContext;
 }
 

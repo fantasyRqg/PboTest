@@ -18,13 +18,13 @@ enum {
     kWhatDataFillFail,
     kWhatPrepareFrameSource,
     kWhatDestroyPboBuf,
+    kWhatOnError,
 };
 
 enum {
     PboResReady,
     PboResNotUsed,
-//    PboResInvalid,
-            PboResPreparing
+    PboResPreparing
 };
 
 typedef struct UploadReq {
@@ -37,7 +37,7 @@ typedef struct UploadReq {
 void Uploader::handle(int what, void *data) {
     switch (what) {
         case kWhatStart:
-            startUploader((EGLContext *) data);
+            handleStartUploader((EGLContext *) data);
             break;
         case kWhatUploadBufAndGetPbo:
             handleUploadAndGetPboBuf((UploadReq *) data);
@@ -45,8 +45,10 @@ void Uploader::handle(int what, void *data) {
         case kWhatReleasePboBuf:
             handleReleasePboBuf((PboRes *) data);
             break;
-        case kWhatDrawFire:
+        case kWhatDrawFire: {
             mPainter->postDrawRenderTask((RenderTask *) data);
+            mPlayer->requestNextFrame();
+        }
             break;
         case kWhatRequestRenderRes:
             requestRenderRes((RenderTask *) data);
@@ -63,6 +65,11 @@ void Uploader::handle(int what, void *data) {
         case kWhatDestroyPboBuf:
             handleDestroyPboBuf();
             break;
+
+        case kWhatOnError: {
+            mPlayer->postOnError((std::runtime_error *) data);
+        }
+            break;
         default:
             break;
     }
@@ -76,18 +83,22 @@ Uploader::~Uploader() {
 
 }
 
-Uploader::Uploader(EGLContext *sharedContext, Painter *painter, DecodeThread *decodeThread,
-                   size_t pboLen)
-        : Looper(), mPainter(painter), mDecodeThread(decodeThread) {
+Uploader::Uploader(Painter *painter, DecodeThread *decodeThread, Player *player, size_t pboLen)
+        : Looper(), mPainter(painter), mDecodeThread(decodeThread), mPlayer(player) {
 
     mPainter->bindUploader(this);
     mDecodeThread->bindUploader(this);
 
     mArrayLen = pboLen;
+
+}
+
+
+void Uploader::startUploader(EGLContext sharedContext) {
     post(kWhatStart, sharedContext);
 }
 
-void Uploader::startUploader(EGLContext *sharedContext) {
+void Uploader::handleStartUploader(EGLContext sharedContext) {
     mEglCore = new EglCore(sharedContext);
     try {
         mEglCore->makeCurrent(EGL_NO_DISPLAY);
@@ -113,8 +124,8 @@ void Uploader::startUploader(EGLContext *sharedContext) {
 }
 
 void Uploader::requestRenderRes(RenderTask *pTask) {
-    int size = -1;
-    pTask->getFrameSourceArray(&size);
+    int size = pTask->getFrameSourceVector().size();
+
 
     for (int i = 0; i < size; ++i) {
         mDecodeThread->requestFrame(new RenderResRequest(pTask, i));
@@ -122,12 +133,11 @@ void Uploader::requestRenderRes(RenderTask *pTask) {
 }
 
 void Uploader::prepareFrameSource(Effect *pEffect) {
-    int size = -1;
-    auto frameArray = pEffect->getFrameSourceArray(&size);
+    auto frames = pEffect->getFrameSourceVector();
 
-    for (int i = 0; i < size; ++i) {
-        if (!frameArray[i].isPrepared()) {
-            mDecodeThread->prepareRes(&frameArray[i]);
+    for (auto fa:frames) {
+        if (!fa->isPrepared()) {
+            mDecodeThread->prepareRes(fa.get());
         }
     }
 
@@ -232,9 +242,14 @@ void Uploader::handleDestroyPboBuf() {
 }
 
 void Uploader::quit() {
-    post(kWhatReleasePboBuf, nullptr);
+    post(kWhatDestroyPboBuf, nullptr);
     Looper::quit();
 }
+
+void Uploader::postOnError(std::runtime_error *pError) {
+    post(kWhatOnError, pError);
+}
+
 
 bool PboRes::isReady() {
     return state == PboResReady;

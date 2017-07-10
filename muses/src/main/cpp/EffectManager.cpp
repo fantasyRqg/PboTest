@@ -2,9 +2,7 @@
 // Created by ranqingguo on 7/7/17.
 //
 
-#include <algorithm>
 #include "EffectManager.h"
-
 
 
 EffectManager::~EffectManager() {
@@ -17,5 +15,7 @@ int EffectManager::getOutFrameRate() const {
 }
 
 EffectManager::EffectManager(int outFrameRate, EffectLine *pBaseEffectLine) : mOutFrameRate(
-        outFrameRate), pBaseEffectLine(pBaseEffectLine) {}
+        outFrameRate), pBaseEffectLine(pBaseEffectLine) {
+
+}
 

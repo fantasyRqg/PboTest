@@ -40,6 +40,8 @@ public:
 
     bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) override;
 
+    std::string getName() override;
+
 
 private:
 
@@ -56,6 +58,9 @@ private:
     AMediaCodec *mDecoder;
     const char *mMimeType = nullptr;
     bool mDecoderRun = false;
+
+    bool mSeeOutputEos;
+    bool mSeeInputEos;
 
     void startMediaCodec();
 

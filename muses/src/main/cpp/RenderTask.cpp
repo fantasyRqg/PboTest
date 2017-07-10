@@ -6,30 +6,28 @@
 #include "exception/IlleaglStateException.h"
 #include "Uploader.h"
 
-RenderTask::RenderTask(long presentTimeUs, IFrameSource **frameSourceArray, int FSArrayLen,
-                       Render **renderArray, int renderArrayLen) :
-        mPresentTimeUs(presentTimeUs),
-        mFrameSourceArray(frameSourceArray),
-        mFSArrayLen(FSArrayLen),
-        mRenderArray(renderArray),
-        mRenderArrayLen(renderArrayLen) {
 
+RenderTask::RenderTask(long presentTimeUs,
+                       const std::vector<std::shared_ptr<IFrameSource>> &frameSourceVector,
+                       const std::vector<std::shared_ptr<Render>> &renderVector) : mPresentTimeUs(
+        presentTimeUs), mFrameSourceVector(frameSourceVector), mRenderVector(renderVector) {
     auto c = 0;
 
-    for (int i = 0; i < mRenderArrayLen; ++i) {
-        c += mRenderArray[i]->getNeededPboCount();
+    for (int i = 0; i < mRenderVector.size(); ++i) {
+        c += mRenderVector[i]->getNeededPboCount();
     }
 
-    if (c != mFSArrayLen) {
+    unsigned int size = mFrameSourceVector.size();
+    if (c != size) {
         throw IllegalStateException("needed bpo count not  === provided frame source count");
     }
 
 
-    mPboResArray = new PboRes *[mFSArrayLen];
-    mSkipFrameArray = new int[mFSArrayLen];
-    mProcessedMark = new bool[mFSArrayLen];
+    mPboResArray = new PboRes *[size];
+    mSkipFrameArray = new int[size];
+    mProcessedMark = new bool[size];
 
-    for (int i = 0; i < mFSArrayLen; ++i) {
+    for (int i = 0; i < size; ++i) {
         mPboResArray[i] = nullptr;
         mSkipFrameArray[i] = 0;
         mProcessedMark[i] = false;
@@ -38,9 +36,10 @@ RenderTask::RenderTask(long presentTimeUs, IFrameSource **frameSourceArray, int 
 }
 
 void RenderTask::draw() {
-    for (int i = 0; i < mRenderArrayLen; ++i) {
-        mRenderArray[i]->drawFrame(mPresentTimeUs);
+    for (auto r : mRenderVector) {
+        r->drawFrame(mPresentTimeUs);
     }
+
 }
 //
 //void RenderTask::prepareDrawFrame() {
@@ -72,7 +71,7 @@ RenderTask::~RenderTask() {
 }
 
 bool RenderTask::isTaskValid() {
-    for (int i = 0; i < mFSArrayLen; ++i) {
+    for (int i = 0; i < mFrameSourceVector.size(); ++i) {
         if (mPboResArray[i] == nullptr || !mPboResArray[i]->isReady()) {
             return false;
         }
@@ -80,28 +79,27 @@ bool RenderTask::isTaskValid() {
     return true;
 }
 
-IFrameSource **RenderTask::getFrameSourceArray(int *out_size) {
-    *out_size = mFSArrayLen;
-    return mFrameSourceArray;
+std::vector<std::shared_ptr<IFrameSource>> RenderTask::getFrameSourceVector() {
+    return mFrameSourceVector;
 }
 
 IFrameSource *RenderTask::getFrameSourceAt(int index) {
-    if (index >= mFSArrayLen) {
+    if (index >= mFrameSourceVector.size()) {
         return nullptr;
     }
 
-    return mFrameSourceArray[index];
+    return mFrameSourceVector[index].get();
 }
 
 PboRes *RenderTask::getPboResAt(int index) {
-    if (index >= mFSArrayLen) {
+    if (index >= mFrameSourceVector.size()) {
         return nullptr;
     }
     return mPboResArray[index];
 }
 
 int RenderTask::getSkipFrameAt(int index) {
-    if (index >= mFSArrayLen) {
+    if (index >= mFrameSourceVector.size()) {
         return 0;
     }
 
@@ -114,13 +112,15 @@ void RenderTask::setReadyPboRes(PboRes *pRes, int i) {
 }
 
 bool RenderTask::isAllResProcessed() {
-    for (int i = 0; i < mFSArrayLen; ++i) {
+    for (int i = 0; i < mFrameSourceVector.size(); ++i) {
         if (!mProcessedMark[i]) {
             return false;
         }
     }
     return true;
 }
+
+
 //
 //bool RenderTask::isSkipped() const {
 //    return mSkipped;

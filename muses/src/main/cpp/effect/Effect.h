@@ -5,6 +5,8 @@
 #ifndef PBOTEST_VIDEOEFFECT_H
 #define PBOTEST_VIDEOEFFECT_H
 
+#include <memory>
+
 #include "../RenderTask.h"
 #include "../render/Render.h"
 
@@ -28,25 +30,27 @@ public:
      */
     Effect(long durationUs);
 
+    virtual ~Effect();
+
     long getStartTimeUs() const;
 
     long getEndTimeUs() const;
 
     bool offsetTime(long offsetUs);
 
-    RenderTask *nextRenderTask();
+    virtual RenderTask *nextRenderTask() = 0;
 
-    IFrameSource *getFrameSourceArray(int *out_size);
+    std::vector<std::shared_ptr<IFrameSource>> getFrameSourceVector();
 
-private:
+    std::vector<std::shared_ptr<Render>> getRenderVector();
+
+protected:
     long mStartTimeUs;
     long mEndTimeUs;
 
-    IFrameSource *mFrameSourcArray;
-    int mFSArrayLen;
+    std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
 
-    Render *mRenderArray;
-    int mRenderArrayLen;
+    std::vector<std::shared_ptr<Render>> mRenderVector;
 
 };
 

@@ -8,7 +8,7 @@
 #include "VideoFrameSource.h"
 #include "DecodeThread.h"
 
-#define CODEC_WAIT_TIMEOUT 200000
+#define CODEC_WAIT_TIMEOUT 100000
 
 
 VideoFrameSource::VideoFrameSource(std::string &videoPath)
@@ -159,4 +159,8 @@ bool VideoFrameSource::isVideo() {
 
 bool VideoFrameSource::skipOneFrame() {
     return dequeueOutputBuffer(nullptr) >= 0;
+}
+
+std::string VideoFrameSource::getName() {
+    return mVideoPath;
 }

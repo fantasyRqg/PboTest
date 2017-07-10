@@ -7,6 +7,8 @@
 
 #include "util/Looper.h"
 #include "RenderTask.h"
+#include "gl/EglCore.h"
+#include "gl/surface/EglSurfaceBase.h"
 
 
 class Uploader;
@@ -16,18 +18,35 @@ class Uploader;
  */
 class Painter : public Looper {
 public:
+    Painter();
+
+    virtual ~Painter();
+
     void postDrawRenderTask(RenderTask *task);
 
-    void handle(int what, void *data) override;
 
     void handleDrawRenderTask(RenderTask *pTask);
 
     void bindUploader(Uploader *uploader);
 
+    void quit() override;
+
 private:
     Uploader *mUploader;
+    EglCore *mEglCore;
+    EglSurfaceBase *mEglSurface;
 
+    void handle(int what, void *data) override;
 
+    void handleStart();
+
+    void handleCreateWindowSurface(NativeWindowType pWindow);
+
+    void handleCreateOffScreenSurface();
+
+    void handleDestroySurface();
+
+    void handleStop();
 };
 
 

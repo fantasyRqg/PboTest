@@ -11,8 +11,10 @@
 
 class RenderTask {
 public:
-    RenderTask(long presentTimeUs, IFrameSource **frameSourceArray, int FSArrayLen,
-               Render **renderArray, int renderArrayLen);
+
+    RenderTask(long presentTimeUs,
+               const std::vector<std::shared_ptr<IFrameSource>> &frameSourceVector,
+               const std::vector<std::shared_ptr<Render>> &renderVector);
 
     void draw();
 
@@ -28,7 +30,7 @@ public:
 
     PboRes *getPboResAt(int index);
 
-    IFrameSource **getFrameSourceArray(int *out_size);
+    std::vector<std::shared_ptr<IFrameSource>> getFrameSourceVector();
 
     virtual ~RenderTask();
 
@@ -39,13 +41,10 @@ public:
 
 private:
     long mPresentTimeUs;
-    IFrameSource **mFrameSourceArray;
+    std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
     bool *mProcessedMark;
-    int mFSArrayLen;
 
-    Render **mRenderArray;
-    int mRenderArrayLen;
-
+    std::vector<std::shared_ptr<Render>> mRenderVector;
 
     int *mSkipFrameArray;
     PboRes **mPboResArray;

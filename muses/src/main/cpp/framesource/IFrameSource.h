@@ -39,6 +39,8 @@ public:
 
     virtual bool skipOneFrame() = 0;
 
+    virtual std::string getName()= 0;
+
     long getStartUs() const;
 
     long getEndUs() const;

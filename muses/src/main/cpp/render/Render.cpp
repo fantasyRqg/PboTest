@@ -66,5 +66,8 @@ void Render::setRenderFbo(bool renderFbo) {
     mRenderFbo = renderFbo;
 }
 
+Render::Render() {}
+
+
 
 
