@@ -32,6 +32,8 @@ public:
 
     float getAspect();
 
+    EGLSurface getEglSurface() const;
+
 protected:
     void releaseEglSurface();
 

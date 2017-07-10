@@ -187,6 +187,14 @@ void Player::advanceEffectManager(EffectManager *pManager, Effect *effect) {
     }
 }
 
+void Player::bindUploader(Uploader *uploader) {
+    mUploader = uploader;
+}
+
+Player::Player() : Looper("Player") {
+
+}
+
 
 
 

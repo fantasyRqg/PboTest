@@ -89,7 +89,7 @@ Uploader::~Uploader() {
 }
 
 Uploader::Uploader(Painter *painter, DecodeThread *decodeThread, Player *player, size_t pboLen)
-        : Looper(), mPainter(painter), mDecodeThread(decodeThread), mPlayer(player) {
+        : Looper("Uploader"), mPainter(painter), mDecodeThread(decodeThread), mPlayer(player) {
 
     mPainter->bindUploader(this);
     mDecodeThread->bindUploader(this);
@@ -112,6 +112,8 @@ void Uploader::handleStartUploader(EGLContext sharedContext) {
         postQuit();
         return;
     }
+
+    glCommon::checkGlError("handleStartUploader");
 
 
     mPboResArray = new PboRes[mArrayLen];

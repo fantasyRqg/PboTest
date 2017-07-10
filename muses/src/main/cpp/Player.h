@@ -18,6 +18,8 @@ class Painter;
 
 class Player : public Looper {
 public:
+    Player();
+
     void play(EffectManager *pEm);
 
     void stop();
@@ -35,6 +37,8 @@ public:
     void requestNextFrame();
 
     void postOnError(std::runtime_error *pError);
+
+    void bindUploader(Uploader *uploader);
 
 private:
     struct SeekReq;

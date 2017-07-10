@@ -3,6 +3,10 @@
 //
 
 #include "Looper.h"
+#include "common.h"
+
+#undef TAG
+#define TAG "Looper"
 
 typedef struct LooperMessage {
     int what;
@@ -10,12 +14,6 @@ typedef struct LooperMessage {
     bool quit;
 } LooperMessage;
 
-Looper::Looper() {
-    mRunning = true;
-    mWorkThread = new std::thread([this]() -> void {
-        loop();
-    });
-}
 
 void Looper::loop() {
     while (mRunning) {
@@ -28,7 +26,11 @@ void Looper::loop() {
         mMsgQueue.pop();
         lock.unlock();
 
+        LOGD("%s what = %d ", mName.c_str(), msg->what);
+
         handle(msg->what, msg->data);
+
+        LOGV("%s what = %d ", mName.c_str(), msg->what);
 
         if (msg->quit) {
             delete (msg);
@@ -75,5 +77,12 @@ void Looper::tailAppendMessage(LooperMessage *message) {
     std::unique_lock<std::mutex> lock(mQueueLock);
     mMsgQueue.push(message);
     mNewMsgCv.notify_one();
+}
+
+Looper::Looper(const std::string &name) : mName(name) {
+    mRunning = true;
+    mWorkThread = new std::thread([this]() -> void {
+        loop();
+    });
 }
 

@@ -68,7 +68,7 @@ DecodeThread::~DecodeThread() {
     quit();
 }
 
-DecodeThread::DecodeThread() {}
+DecodeThread::DecodeThread() : Looper("DecodeThread") {}
 
 void DecodeThread::requestFrame(RenderResRequest *rrr) {
     post(kWhatRequestFrame, rrr);

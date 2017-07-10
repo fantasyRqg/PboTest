@@ -43,9 +43,10 @@ Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject
 
     DecodeThread *decodeThread = new DecodeThread();
     Painter *painter = new Painter(as);
-    painter->postCreateWindowSurface(pWindow);
     Player *player = new Player();
     Uploader *uploader = new Uploader(painter, decodeThread, player, 4);
+
+    painter->postCreateWindowSurface(pWindow);
 
 
 //    painter->quit();

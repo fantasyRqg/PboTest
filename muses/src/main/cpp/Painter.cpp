@@ -1,10 +1,14 @@
 //
 // Created by ranqingguo on 7/7/17.
 //
+#include <android/asset_manager_jni.h>
 
 #include "Painter.h"
 #include "Uploader.h"
 #include "gl/surface/WindowSurface.h"
+
+//#undef TAG
+//#define TAG "Painter"
 
 enum {
     kWhatStart,
@@ -17,7 +21,7 @@ enum {
     kWhatRenderTearDown,
 };
 
-Painter::Painter(AAssetManager *assetManager) : mAssetManager(assetManager) {
+Painter::Painter(AAssetManager *assetManager) : Looper("Painter"), mAssetManager(assetManager) {
 
 }
 
@@ -104,7 +108,7 @@ void Painter::quit() {
 
 void Painter::handleCreateWindowSurface(NativeWindowType pWindow) {
     mEglSurface = new WindowSurface(mEglCore, pWindow, true);
-    mEglCore->makeCurrent(mEglSurface);
+    mEglCore->makeCurrent(mEglSurface->getEglSurface());
 }
 
 void Painter::handleCreateOffScreenSurface() {
@@ -124,11 +128,11 @@ Painter::~Painter() {
 
 
 void Painter::tearDownRender(Effect *pEffect) {
-
+    post(kWhatRenderSetup, pEffect);
 }
 
 void Painter::setUpRender(Effect *pEffect) {
-
+    post(kWhatRenderTearDown, pEffect);
 }
 
 void Painter::handleRenderTearDown(Effect *pEffect) {

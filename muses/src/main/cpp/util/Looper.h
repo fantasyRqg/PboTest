@@ -15,7 +15,7 @@ struct LooperMessage;
 
 class Looper {
 public:
-    Looper();
+    Looper(const std::string &name);
 
     Looper &operator=(const Looper &) = delete;
 
@@ -33,6 +33,8 @@ public:
 
 protected:
     virtual void handle(int what, void *data) = 0;
+
+    std::string mName;
 
 private:
     void tailAppendMessage(LooperMessage *message);

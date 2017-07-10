@@ -72,3 +72,7 @@ EglSurfaceBase::~EglSurfaceBase() {
 
 }
 
+EGLSurface EglSurfaceBase::getEglSurface() const {
+    return mEglSurface;
+}
+
