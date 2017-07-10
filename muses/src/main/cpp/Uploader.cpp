@@ -61,11 +61,11 @@ void Uploader::handle(int what, void *data) {
             handleDataFillFail((RenderResRequest *) data);
             break;
         case kWhatPrepareEffect:
-            handlePrepareFrameSource((Effect *) data);
+            handlePrepareEffect((Effect *) data);
             break;
 
         case kWhatReleaseEffect:
-            handleReleaseFrameSource((Effect *) data);
+            handleReleaseEffect((Effect *) data);
             break;
         case kWhatDestroyPboBuf:
             handleDestroyPboBuf();
@@ -139,7 +139,7 @@ void Uploader::handleRequestRenderRes(RenderTask *pTask) {
     }
 }
 
-void Uploader::handlePrepareFrameSource(Effect *pEffect) {
+void Uploader::handlePrepareEffect(Effect *pEffect) {
     auto frames = pEffect->getFrameSourceVector();
 
     for (auto fa:frames) {
@@ -153,7 +153,7 @@ void Uploader::handlePrepareFrameSource(Effect *pEffect) {
 }
 
 
-void Uploader::handleReleaseFrameSource(Effect *pEffect) {
+void Uploader::handleReleaseEffect(Effect *pEffect) {
     auto frames = pEffect->getFrameSourceVector();
 
     for (auto fa:frames) {

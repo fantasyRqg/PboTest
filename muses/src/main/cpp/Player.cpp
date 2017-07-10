@@ -114,7 +114,7 @@ void Player::handle(int what, void *data) {
 
 void Player::handlePlay(EffectManager *pManager) {
     mCurrentPlay = pManager;
-
+    mPlayRun = true;
     playOneFrame(mCurrentPlay);
 }
 

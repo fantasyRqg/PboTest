@@ -16,4 +16,3 @@ RenderTask *TestEffect::nextRenderTask() {
     return new RenderTask((long) (glCommon::systemnanotime() / 1000L), mFrameSourceVector,
                           mRenderVector);
 }
-

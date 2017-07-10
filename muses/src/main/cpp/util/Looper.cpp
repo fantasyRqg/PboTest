@@ -74,9 +74,14 @@ void Looper::postQuit() {
 
 
 void Looper::tailAppendMessage(LooperMessage *message) {
+    LOGD("tailAppendMessage %s what = %d", mName.c_str(), message->what);
+
     std::unique_lock<std::mutex> lock(mQueueLock);
     mMsgQueue.push(message);
     mNewMsgCv.notify_one();
+
+    LOGV("tailAppendMessage %s what = %d ", mName.c_str(), message->what);
+
 }
 
 Looper::Looper(const std::string &name) : mName(name) {

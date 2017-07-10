@@ -94,7 +94,7 @@ private:
 
     void handleRequestRenderRes(RenderTask *pTask);
 
-    void handlePrepareFrameSource(Effect *pEffect);
+    void handlePrepareEffect(Effect *pEffect);
 
     void handleUploadAndGetPboBuf(UploadReq *pReq);
 
@@ -106,7 +106,7 @@ private:
 
     void handleDestroyPboBuf();
 
-    void handleReleaseFrameSource(Effect *pEffect);
+    void handleReleaseEffect(Effect *pEffect);
 };
 
 

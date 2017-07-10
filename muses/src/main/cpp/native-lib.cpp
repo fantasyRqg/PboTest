@@ -10,6 +10,7 @@
 #include "framesource/DecodeThread.h"
 #include "Painter.h"
 #include "Uploader.h"
+#include "effect/TestEffect.h"
 
 #undef TAG
 #define TAG "native-lib"
@@ -48,6 +49,12 @@ Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject
 
     painter->postCreateWindowSurface(pWindow);
 
+    EffectLine *el = new EffectLine();
+    el->append(new TestEffect(10000000L));
+
+    EffectManager *em = new EffectManager(24, el);
+
+    player->play(em);
 
 //    painter->quit();
 //    uploader->quit();
