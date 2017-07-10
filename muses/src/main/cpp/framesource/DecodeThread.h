@@ -40,6 +40,8 @@ public:
 
     void bindUploader(Uploader *uploader);
 
+    void releaseRes(IFrameSource *pSource);
+
 private:
     void handle(int what, void *data) override;
 

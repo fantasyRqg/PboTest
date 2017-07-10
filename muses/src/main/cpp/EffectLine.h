@@ -33,11 +33,11 @@ public:
 private:
     void appendEffectItem(EffectItem *item, EffectItem *ei);
 
-    EffectItem *pHeader = nullptr;
+    EffectItem *mHeader = nullptr;
 
-    EffectItem *pEnd = nullptr;
+    EffectItem *mEnd = nullptr;
 
-    EffectItem *pCurrent = nullptr;
+    EffectItem *mCurrent = nullptr;
 };
 
 

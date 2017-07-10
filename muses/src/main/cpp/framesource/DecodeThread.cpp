@@ -51,12 +51,7 @@ void DecodeThread::handle(int what, void *data) {
             break;
 
         case kWhatReleaseRes: {
-            auto pVfs = (VideoFrameSource *) data;
-
-            AMediaCodec_stop(pVfs->mDecoder);
-            AMediaCodec_delete(pVfs->mDecoder);
-            pVfs->mDecoder = nullptr;
-            pVfs->mDecoderRun = false;
+            ((IFrameSource *) data)->release();
         }
             break;
 
@@ -132,6 +127,10 @@ void DecodeThread::handleSkipFrame(SkipReq *pReq) {
 
         delete pReq;
     }
+}
+
+void DecodeThread::releaseRes(IFrameSource *pSource) {
+    post(kWhatReleaseRes, pSource);
 }
 
 

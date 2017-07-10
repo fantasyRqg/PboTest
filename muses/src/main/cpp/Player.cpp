@@ -4,6 +4,7 @@
 
 #include "Player.h"
 #include "util/common.h"
+#include "Uploader.h"
 
 #undef TAG
 #define TAG "Player"
@@ -119,15 +120,18 @@ void Player::handlePlay(EffectManager *pManager) {
 
 
 void Player::handleStopCurrent() {
-
+    mPlayRun = false;
 }
 
 void Player::handlePause() {
-
+    mPlayRun = false;
 }
 
 void Player::handleResume() {
-
+    if (mCurrentPlay != nullptr) {
+        mPlayRun = true;
+        playOneFrame(mCurrentPlay);
+    }
 }
 
 void Player::handleSeek(SeekReq *pReq) {
@@ -135,19 +139,52 @@ void Player::handleSeek(SeekReq *pReq) {
 }
 
 void Player::handleReplay() {
-
+    auto curr = mCurrentPlay;
+    if (curr != nullptr) {
+        post(kWhatStopCurrent, nullptr);
+        curr->reset();
+        post(kWhatPlay, curr);
+    }
 }
 
 void Player::handleSpeedChange(SpeedReq *pReq) {
-
+    if (mCurrentPlay != nullptr) {
+        mPlayRun = true;
+        playOneFrame(mCurrentPlay);
+    }
 }
 
 void Player::handleNextFrame() {
-
+    playOneFrame(mCurrentPlay);
 }
 
 void Player::playOneFrame(EffectManager *pManager) {
+    auto effect = pManager->getEffect();
 
+    if (effect != nullptr && effect->hasNextFrame()) {
+        if (effect->isPrepared()) {
+            mUploader->prepareEffect(effect);
+        }
+
+        auto task = effect->nextRenderTask();
+        if (task != nullptr) {
+            mUploader->postRenderTask(task);
+        } else {
+            advanceEffectManager(pManager, effect);
+        }
+    } else {
+        advanceEffectManager(pManager, effect);
+    }
+}
+
+void Player::advanceEffectManager(EffectManager *pManager, Effect *effect) {
+    if (effect != nullptr) {
+        mUploader->releaseEffect(effect);
+    }
+
+    if (pManager->advance()) {
+        requestNextFrame();
+    }
 }
 
 

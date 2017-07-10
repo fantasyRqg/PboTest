@@ -164,3 +164,11 @@ bool VideoFrameSource::skipOneFrame() {
 std::string VideoFrameSource::getName() {
     return mVideoPath;
 }
+
+bool VideoFrameSource::release() {
+    auto stopR = AMediaCodec_stop(mDecoder);
+    auto delR = AMediaCodec_delete(mDecoder);
+    mDecoder = nullptr;
+    mDecoderRun = false;
+    return stopR == AMEDIA_OK && delR == AMEDIA_OK;
+}

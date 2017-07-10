@@ -12,26 +12,26 @@ typedef struct EffectItem {
 } EffectItem;
 
 EffectLine::EffectLine() {
-    pHeader = new EffectItem;
+    mHeader = new EffectItem;
 
-    pHeader->prev = nullptr;
-    pHeader->pEffect = nullptr;
+    mHeader->prev = nullptr;
+    mHeader->pEffect = nullptr;
 
-    pEnd = new EffectItem;
-    pEnd->prev = pHeader;
-    pEnd->next = nullptr;
-    pEnd->pEffect = nullptr;
+    mEnd = new EffectItem;
+    mEnd->prev = mHeader;
+    mEnd->next = nullptr;
+    mEnd->pEffect = nullptr;
 
-    pHeader->next = pEnd;
+    mHeader->next = mEnd;
 }
 
 bool EffectLine::checkNoTimelineGap() {
-    if (pHeader == nullptr)
+    if (mHeader == nullptr)
         return false;
 
-    auto current = pHeader;
+    auto current = mHeader;
     while (true) {
-        auto next = pHeader->next;
+        auto next = mHeader->next;
         if (next == nullptr) {
             return true;
         }
@@ -49,7 +49,7 @@ void EffectLine::append(Effect *effect) {
     auto ei = new EffectItem();
     ei->pEffect = effect;
 
-    appendEffectItem(ei, pEnd->prev);
+    appendEffectItem(ei, mEnd->prev);
 
 }
 
@@ -61,7 +61,7 @@ void EffectLine::appendPre(Effect *effect) {
 
     ei->pEffect = effect;
 
-    appendEffectItem(ei, pHeader);
+    appendEffectItem(ei, mHeader);
 }
 
 void EffectLine::appendEffectItem(EffectItem *item, EffectItem *ei) {
@@ -74,3 +74,22 @@ void EffectLine::appendEffectItem(EffectItem *item, EffectItem *ei) {
     item->next = next;
 }
 
+
+bool EffectLine::advance() {
+    mCurrent = mCurrent->next;
+    return mCurrent != mEnd;
+}
+
+Effect *EffectLine::getCurrent() {
+    if (mCurrent == nullptr)
+        mCurrent = mHeader->next;
+    return mCurrent->pEffect;
+}
+
+void EffectLine::reset() {
+    mCurrent = mHeader->next;
+}
+
+void EffectLine::seekTo(long timeUs) {
+
+}

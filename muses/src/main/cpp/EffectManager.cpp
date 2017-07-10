@@ -6,7 +6,7 @@
 
 
 EffectManager::~EffectManager() {
-    delete pBaseEffectLine;
+    delete mBaseEffectLine;
 
 }
 
@@ -15,7 +15,18 @@ int EffectManager::getOutFrameRate() const {
 }
 
 EffectManager::EffectManager(int outFrameRate, EffectLine *pBaseEffectLine) : mOutFrameRate(
-        outFrameRate), pBaseEffectLine(pBaseEffectLine) {
+        outFrameRate), mBaseEffectLine(pBaseEffectLine) {
 
 }
 
+bool EffectManager::advance() {
+    return mBaseEffectLine->advance();
+}
+
+Effect *EffectManager::getEffect() {
+    return mBaseEffectLine->getCurrent();
+}
+
+void EffectManager::reset() {
+    mBaseEffectLine->reset();
+}

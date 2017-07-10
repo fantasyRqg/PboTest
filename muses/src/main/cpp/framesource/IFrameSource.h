@@ -29,6 +29,8 @@ public:
 
     virtual bool prepare(DecodeThread *decodeThread) = 0;
 
+    virtual bool release() = 0;
+
     virtual bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) = 0;
 
     virtual bool isOk() = 0;

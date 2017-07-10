@@ -17,6 +17,11 @@ enum {
     kWhatRenderTearDown,
 };
 
+Painter::Painter(AAssetManager *assetManager) : mAssetManager(assetManager) {
+
+}
+
+
 void Painter::postDrawRenderTask(RenderTask *task) {
     post(kWhatDrawRenderTask, task);
 }
@@ -48,6 +53,13 @@ void Painter::handle(int what, void *data) {
             handleDestroySurface();
             break;
 
+        case kWhatRenderSetup:
+            handleRenderSetup((Effect *) data);
+            break;
+        case kWhatRenderTearDown:
+            handleRenderTearDown((Effect *) data);
+            break;
+
         default:
             break;
     }
@@ -71,9 +83,6 @@ void Painter::bindUploader(Uploader *uploader) {
     post(kWhatStart, nullptr);
 }
 
-Painter::Painter() {
-
-}
 
 void Painter::handleStart() {
     mEglCore = new EglCore;
@@ -112,5 +121,33 @@ void Painter::handleDestroySurface() {
 Painter::~Painter() {
 
 }
+
+
+void Painter::tearDownRender(Effect *pEffect) {
+
+}
+
+void Painter::setUpRender(Effect *pEffect) {
+
+}
+
+void Painter::handleRenderTearDown(Effect *pEffect) {
+    for (auto r : pEffect->getRenderVector()) {
+        r->setUp(mAssetManager, mEglSurface);
+    }
+}
+
+void Painter::handleRenderSetup(Effect *pEffect) {
+    for (auto r: pEffect->getRenderVector()) {
+        r->tearDown();
+    }
+}
+
+void Painter::postCreateWindowSurface(ANativeWindow *pWindow) {
+    post(kWhatCreateWindowSurface, pWindow);
+}
+
+
+
 
 

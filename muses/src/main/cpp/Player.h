@@ -39,7 +39,10 @@ public:
 private:
     struct SeekReq;
     struct SpeedReq;
+
     EffectManager *mCurrentPlay;
+    Uploader *mUploader;
+    bool mPlayRun = false;
 
     void handle(int what, void *data) override;
 
@@ -60,6 +63,8 @@ private:
     void handleNextFrame();
 
     void playOneFrame(EffectManager *pManager);
+
+    void advanceEffectManager(EffectManager *pManager, Effect *effect);
 };
 
 

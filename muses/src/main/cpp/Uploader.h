@@ -68,6 +68,12 @@ public:
 
     void postOnError(std::runtime_error *pError);
 
+    void postRenderTask(RenderTask *pTask);
+
+    void prepareEffect(Effect *pEffect);
+
+    void releaseEffect(Effect *pEffect);
+
 private:
     EglCore *mEglCore;
 
@@ -86,9 +92,9 @@ private:
 
     void handleStartUploader(EGLContext sharedContext);
 
-    void requestRenderRes(RenderTask *pTask);
+    void handleRequestRenderRes(RenderTask *pTask);
 
-    void prepareFrameSource(Effect *pEffect);
+    void handlePrepareFrameSource(Effect *pEffect);
 
     void handleUploadAndGetPboBuf(UploadReq *pReq);
 
@@ -99,6 +105,8 @@ private:
     void handleDataFillFail(RenderResRequest *pRequest);
 
     void handleDestroyPboBuf();
+
+    void handleReleaseFrameSource(Effect *pEffect);
 };
 
 

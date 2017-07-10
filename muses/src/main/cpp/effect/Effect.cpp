@@ -15,7 +15,7 @@ long Effect::getEndTimeUs() const {
 
 Effect::Effect(long startTimeUs, long endTimeUs) : mStartTimeUs(
         startTimeUs), mEndTimeUs(endTimeUs) {
-
+    mRunUs = 0;
 
 }
 
@@ -45,4 +45,16 @@ std::vector<std::shared_ptr<Render>> Effect::getRenderVector() {
     return mRenderVector;
 }
 
+bool Effect::isPrepared() {
+    for (auto ifs : mFrameSourceVector) {
+        if (!ifs->isPrepared()) {
+            return false;
+        }
+    }
+    return true;
+}
 
+
+bool Effect::hasNextFrame() {
+    return mStartTimeUs + mRunUs > mEndTimeUs;
+}

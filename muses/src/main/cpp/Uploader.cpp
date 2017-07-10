@@ -16,7 +16,8 @@ enum {
     kWhatRequestRenderRes,
     kWhatDataFillReady,
     kWhatDataFillFail,
-    kWhatPrepareFrameSource,
+    kWhatPrepareEffect,
+    kWhatReleaseEffect,
     kWhatDestroyPboBuf,
     kWhatOnError,
 };
@@ -51,7 +52,7 @@ void Uploader::handle(int what, void *data) {
         }
             break;
         case kWhatRequestRenderRes:
-            requestRenderRes((RenderTask *) data);
+            handleRequestRenderRes((RenderTask *) data);
             break;
         case kWhatDataFillReady:
             handleDataFillReady((RenderResRequest *) data);
@@ -59,8 +60,12 @@ void Uploader::handle(int what, void *data) {
         case kWhatDataFillFail:
             handleDataFillFail((RenderResRequest *) data);
             break;
-        case kWhatPrepareFrameSource:
-            prepareFrameSource((Effect *) data);
+        case kWhatPrepareEffect:
+            handlePrepareFrameSource((Effect *) data);
+            break;
+
+        case kWhatReleaseEffect:
+            handleReleaseFrameSource((Effect *) data);
             break;
         case kWhatDestroyPboBuf:
             handleDestroyPboBuf();
@@ -123,7 +128,7 @@ void Uploader::handleStartUploader(EGLContext sharedContext) {
     }
 }
 
-void Uploader::requestRenderRes(RenderTask *pTask) {
+void Uploader::handleRequestRenderRes(RenderTask *pTask) {
     int size = pTask->getFrameSourceVector().size();
 
 
@@ -132,7 +137,7 @@ void Uploader::requestRenderRes(RenderTask *pTask) {
     }
 }
 
-void Uploader::prepareFrameSource(Effect *pEffect) {
+void Uploader::handlePrepareFrameSource(Effect *pEffect) {
     auto frames = pEffect->getFrameSourceVector();
 
     for (auto fa:frames) {
@@ -140,6 +145,22 @@ void Uploader::prepareFrameSource(Effect *pEffect) {
             mDecodeThread->prepareRes(fa.get());
         }
     }
+
+    mPainter->setUpRender(pEffect);
+
+}
+
+
+void Uploader::handleReleaseFrameSource(Effect *pEffect) {
+    auto frames = pEffect->getFrameSourceVector();
+
+    for (auto fa:frames) {
+        if (fa->isPrepared()) {
+            mDecodeThread->releaseRes(fa.get());
+        }
+    }
+
+    mPainter->tearDownRender(pEffect);
 
 }
 
@@ -248,6 +269,18 @@ void Uploader::quit() {
 
 void Uploader::postOnError(std::runtime_error *pError) {
     post(kWhatOnError, pError);
+}
+
+void Uploader::postRenderTask(RenderTask *pTask) {
+    post(kWhatRequestRenderRes, pTask);
+}
+
+void Uploader::prepareEffect(Effect *pEffect) {
+    post(kWhatPrepareEffect, pEffect);
+}
+
+void Uploader::releaseEffect(Effect *pEffect) {
+    post(kWhatReleaseEffect, pEffect);
 }
 
 

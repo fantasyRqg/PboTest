@@ -42,14 +42,16 @@ public:
 
     std::string getName() override;
 
+    bool release() override;
+
+
+    ssize_t queueInputBuffer();
 
 private:
 
-    friend class DecodeThread;
 
     void initMediaInfo(AMediaFormat *format);
 
-//    void onDequeueOutputBuffer();
 
     int mFrameRate;
     std::string mVideoPath;
@@ -63,8 +65,6 @@ private:
     bool mSeeInputEos;
 
     void startMediaCodec();
-
-    ssize_t queueInputBuffer();
 
     int dequeueOutputBuffer(GetFrameCallback callback);
 };

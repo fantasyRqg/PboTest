@@ -38,7 +38,12 @@ public:
 
     bool offsetTime(long offsetUs);
 
+    bool hasNextFrame();
+
+    bool isPrepared();
+
     virtual RenderTask *nextRenderTask() = 0;
+
 
     std::vector<std::shared_ptr<IFrameSource>> getFrameSourceVector();
 
@@ -47,6 +52,10 @@ public:
 protected:
     long mStartTimeUs;
     long mEndTimeUs;
+    /**
+     * already displayed time
+     */
+    long mRunUs;
 
     std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
 

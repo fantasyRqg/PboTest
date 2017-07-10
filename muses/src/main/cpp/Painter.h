@@ -9,6 +9,7 @@
 #include "RenderTask.h"
 #include "gl/EglCore.h"
 #include "gl/surface/EglSurfaceBase.h"
+#include "effect/Effect.h"
 
 
 class Uploader;
@@ -18,7 +19,7 @@ class Uploader;
  */
 class Painter : public Looper {
 public:
-    Painter();
+    Painter(AAssetManager *assetManager);
 
     virtual ~Painter();
 
@@ -31,10 +32,17 @@ public:
 
     void quit() override;
 
+    void tearDownRender(Effect *pEffect);
+
+    void setUpRender(Effect *pEffect);
+
+    void postCreateWindowSurface(ANativeWindow *pWindow);
+
 private:
     Uploader *mUploader;
     EglCore *mEglCore;
     EglSurfaceBase *mEglSurface;
+    AAssetManager *mAssetManager;
 
     void handle(int what, void *data) override;
 
@@ -47,6 +55,10 @@ private:
     void handleDestroySurface();
 
     void handleStop();
+
+    void handleRenderSetup(Effect *pEffect);
+
+    void handleRenderTearDown(Effect *pEffect);
 };
 
 

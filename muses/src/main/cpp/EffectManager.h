@@ -27,10 +27,11 @@ public:
      * to next effect
      * @return has next effect
      */
-    bool advadce();
+    bool advance();
 
-    bool getEffect();
+    Effect *getEffect();
 
+    void reset();
 
 private:
 
@@ -39,7 +40,7 @@ private:
     /**
      * time line is no gap
      */
-    EffectLine *pBaseEffectLine;
+    EffectLine *mBaseEffectLine;
 
     std::vector<long> mModieyTimes;
 };
