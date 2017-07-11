@@ -14,6 +14,7 @@
 
 class Uploader;
 
+
 /**
  * response for draw frame
  */
@@ -38,11 +39,14 @@ public:
 
     void postCreateWindowSurface(ANativeWindow *pWindow);
 
+    void postNewPlay();
+
 private:
     Uploader *mUploader;
     EglCore *mEglCore;
     EglSurfaceBase *mEglSurface;
     AAssetManager *mAssetManager;
+    int64_t  mFirstDisplayUs;
 
     void handle(int what, void *data) override;
 
@@ -59,6 +63,8 @@ private:
     void handleRenderSetup(Effect *pEffect);
 
     void handleRenderTearDown(Effect *pEffect);
+
+    void handleNewPlay();
 };
 
 

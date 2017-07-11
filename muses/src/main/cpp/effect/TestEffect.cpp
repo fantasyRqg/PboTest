@@ -3,7 +3,6 @@
 //
 
 #include "TestEffect.h"
-#include "../util/common.h"
 #include "../render/PolygonOffsetRenderer.h"
 
 TestEffect::TestEffect(long durationUs) : Effect(durationUs) {
@@ -13,7 +12,7 @@ TestEffect::TestEffect(long durationUs) : Effect(durationUs) {
 }
 
 RenderTask *TestEffect::nextRenderTask() {
-    mRunUs += 416666;
-    return new RenderTask((long) (glCommon::systemnanotime() / 1000L), mFrameSourceVector,
+    mRunUs += 33333;
+    return new RenderTask(mStartTimeUs + mRunUs, mFrameSourceVector,
                           mRenderVector);
 }

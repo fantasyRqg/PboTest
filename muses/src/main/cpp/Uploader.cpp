@@ -19,6 +19,7 @@ enum {
     kWhatPrepareEffect,
     kWhatReleaseEffect,
     kWhatDestroyPboBuf,
+    kWhatNewPlay,
     kWhatOnError,
 };
 
@@ -50,7 +51,7 @@ typedef struct UploadReq {
 } UploadReq;
 
 void Uploader::handle(int what, void *data) {
-    LOGD("handle what = %s", enumStr[what].c_str());
+//    LOGD("handle what = %s", enumStr[what].c_str());
     switch (what) {
         case kWhatStart:
             handleStartUploader((EGLContext *) data);
@@ -84,6 +85,11 @@ void Uploader::handle(int what, void *data) {
             break;
         case kWhatDestroyPboBuf:
             handleDestroyPboBuf();
+            break;
+
+        case kWhatNewPlay: {
+            mPainter->postNewPlay();
+        }
             break;
 
         case kWhatOnError: {
@@ -309,6 +315,10 @@ void Uploader::prepareEffect(Effect *pEffect) {
 
 void Uploader::releaseEffect(Effect *pEffect) {
     post(kWhatReleaseEffect, pEffect);
+}
+
+void Uploader::postNewPlay() {
+    post(kWhatNewPlay, nullptr);
 }
 
 

@@ -86,7 +86,7 @@ void Player::postOnError(std::runtime_error *pError) {
 
 
 void Player::handle(int what, void *data) {
-    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
+//    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
     switch (what) {
         case kWhatPlay:
             handlePlay((EffectManager *) data);
@@ -128,6 +128,7 @@ void Player::handle(int what, void *data) {
 void Player::handlePlay(EffectManager *pManager) {
     mCurrentPlay = pManager;
     mPlayRun = true;
+    mUploader->postNewPlay();
     playOneFrame(mCurrentPlay);
 }
 

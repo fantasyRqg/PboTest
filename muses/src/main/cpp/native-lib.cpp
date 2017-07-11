@@ -50,9 +50,8 @@ Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject
     painter->postCreateWindowSurface(pWindow);
 
 
-
     EffectLine *el = new EffectLine();
-    el->append(new TestEffect(10000000L));
+    el->append(new TestEffect(100000000L));
 
     EffectManager *em = new EffectManager(24, el);
 

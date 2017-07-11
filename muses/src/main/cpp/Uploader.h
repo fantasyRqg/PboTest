@@ -74,6 +74,8 @@ public:
 
     void releaseEffect(Effect *pEffect);
 
+    void postNewPlay();
+
 private:
     EglCore *mEglCore = nullptr;
 

@@ -7,7 +7,7 @@
 #include "Uploader.h"
 
 
-RenderTask::RenderTask(long presentTimeUs,
+RenderTask::RenderTask(int64_t presentTimeUs,
                        const std::vector<std::shared_ptr<IFrameSource>> &frameSourceVector,
                        const std::vector<std::shared_ptr<Render>> &renderVector) : mPresentTimeUs(
         presentTimeUs), mFrameSourceVector(frameSourceVector), mRenderVector(renderVector) {
@@ -118,6 +118,10 @@ bool RenderTask::isAllResProcessed() {
         }
     }
     return true;
+}
+
+int64_t RenderTask::getPresentTimeUs() const {
+    return mPresentTimeUs;
 }
 
 

@@ -12,7 +12,7 @@
 class RenderTask {
 public:
 
-    RenderTask(long presentTimeUs,
+    RenderTask(int64_t presentTimeUs,
                const std::vector<std::shared_ptr<IFrameSource>> &frameSourceVector,
                const std::vector<std::shared_ptr<Render>> &renderVector);
 
@@ -38,9 +38,10 @@ public:
 
     bool isAllResProcessed();
 
+    int64_t getPresentTimeUs() const;
 
 private:
-    long mPresentTimeUs;
+    int64_t mPresentTimeUs;
     std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
     bool *mProcessedMark;
 

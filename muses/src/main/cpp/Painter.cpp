@@ -20,6 +20,7 @@ enum {
     kWhatDestroySurface,
     kWhatRenderSetup,
     kWhatRenderTearDown,
+    kWhatNewPlay,
 };
 
 std::string painterStr[]{
@@ -33,6 +34,7 @@ std::string painterStr[]{
         "kWhatRenderTearDown",
 };
 
+
 Painter::Painter(AAssetManager *assetManager) : Looper("Painter"), mAssetManager(assetManager) {
 
 }
@@ -43,7 +45,7 @@ void Painter::postDrawRenderTask(RenderTask *task) {
 }
 
 void Painter::handle(int what, void *data) {
-    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
+//    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
 
     switch (what) {
         case kWhatStart:
@@ -76,16 +78,30 @@ void Painter::handle(int what, void *data) {
         case kWhatRenderTearDown:
             handleRenderTearDown((Effect *) data);
             break;
-
+        case kWhatNewPlay:
+            handleNewPlay();
+            break;
         default:
             break;
     }
 }
 
 void Painter::handleDrawRenderTask(RenderTask *pTask) {
-    LOGD("handleDrawRenderTask");
+//    LOGD("handleDrawRenderTask");
     pTask->draw();
 
+    auto pt = pTask->getPresentTimeUs();
+    auto curr = glCommon::systemnanotime() / 1000LL;
+    auto sleepUs = pt - (curr - mFirstDisplayUs);
+
+//    LOGD("sleep = %10lld pt = %10lld curr = %10lld first = %10lld",
+//         sleepUs,
+//         pt,
+//         curr,
+//         mFirstDisplayUs);
+    if (sleepUs > 0) {
+        std::this_thread::sleep_for(std::chrono::microseconds(sleepUs));
+    }
     mEglSurface->swapBuffers();
 
     int size = pTask->getFrameSourceVector().size();
@@ -165,6 +181,15 @@ void Painter::handleRenderSetup(Effect *pEffect) {
 
 void Painter::postCreateWindowSurface(ANativeWindow *pWindow) {
     post(kWhatCreateWindowSurface, pWindow);
+}
+
+void Painter::handleNewPlay() {
+    mFirstDisplayUs = glCommon::systemnanotime() / 1000LL;
+    LOGI("first = %lld", mFirstDisplayUs);
+}
+
+void Painter::postNewPlay() {
+    post(kWhatNewPlay, nullptr);
 }
 
 

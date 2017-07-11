@@ -22,7 +22,7 @@ int PolygonOffsetRenderer::getNeededPboCount() {
 }
 
 void PolygonOffsetRenderer::drawFrame(long timeUs) {
-    glCommon::checkGlError("drawFrame");
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(mProgram);
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
@@ -36,7 +36,7 @@ void PolygonOffsetRenderer::drawFrame(long timeUs) {
     glCommon::checkGlError("glVertexAttribPointer");
 
     glm::mat4 mvp = mProjMatrix * mViewMatrix *
-                    glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs) * 0.1f),
+                    glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.1f),
                                 glm::vec3(0.0f, 1.0f, 0.0f));
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
