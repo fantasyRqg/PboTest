@@ -5,9 +5,9 @@
 #ifndef MUSES_RENDER_H
 #define MUSES_RENDER_H
 
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES
-#endif //GL_GLEXT_PROTOTYPES
+//#ifndef GL_GLEXT_PROTOTYPES
+//#define GL_GLEXT_PROTOTYPES
+//#endif //GL_GLEXT_PROTOTYPES
 
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>

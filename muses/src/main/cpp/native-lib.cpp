@@ -22,7 +22,6 @@ JNIEXPORT jstring JNICALL
 Java_rqg_fantasy_muses_Native_stringFromJNI(JNIEnv *env, jclass type) {
 
 
-
     std::string hello = "Hello from C++";
 
 
@@ -60,6 +59,12 @@ Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject
         LOGE("init effect error: %s", e.what());
         return;
     }
+    ANativeWindow_Buffer buffer;
+    ARect rect;
+    ANativeWindow_lock(pWindow, &buffer, &rect);
+
+    ANativeWindow_release(pWindow);
+
 
     EffectManager *em = new EffectManager(24, el);
 

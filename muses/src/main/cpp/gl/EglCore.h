@@ -5,9 +5,9 @@
 #ifndef MUSES_EGLCORE_H
 #define MUSES_EGLCORE_H
 
-#ifndef EGL_EGLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#endif //EGL_EGLEXT_PROTOTYPES
+//#ifndef EGL_EGLEXT_PROTOTYPES
+//#define EGL_EGLEXT_PROTOTYPES
+//#endif //EGL_EGLEXT_PROTOTYPES
 
 #include <vector>
 #include <set>

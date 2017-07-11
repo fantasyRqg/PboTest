@@ -8,7 +8,6 @@
 
 #include "PolygonOffsetRenderer.h"
 #include "../util/common.h"
-#include "../Uploader.h"
 
 
 void PolygonOffsetRenderer::prepareDrawFrame() {
@@ -23,18 +22,17 @@ int PolygonOffsetRenderer::getNeededPboCount() {
 void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
-
-
-    for (int i = 0; i < TEXTURE_COUNT; ++i) {
-        auto pbores = mPboResArray[i];
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbores->pbo);
-        glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureId[i]);
-        
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        glCommon::checkGlError("bind texture and pbo");
-
-    }
+//
+//    for (int i = 0; i < TEXTURE_COUNT; ++i) {
+//        auto pbores = mPboResArray[i];
+//        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbores->pbo);
+//        glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureId[i]);
+//
+//        glBindTexture(GL_TEXTURE_2D, 0);
+//        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+//        glCommon::checkGlError("bind texture and pbo");
+//
+//    }
 
     glUseProgram(mProgram);
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
