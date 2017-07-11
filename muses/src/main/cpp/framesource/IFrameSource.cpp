@@ -21,6 +21,14 @@ long IFrameSource::getEndUs() const {
     return mEndUs;
 }
 
+int IFrameSource::getWidth() const {
+    return mWidth;
+}
+
+int IFrameSource::getHeight() const {
+    return mHeight;
+}
+
 
 //
 //long IFrameSource::getFrameStartMills() const {

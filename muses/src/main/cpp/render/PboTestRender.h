@@ -12,7 +12,7 @@
 class PboTestRender : public Render {
 public:
 
-    void drawFrame(long millsecond) override;
+    void drawFrame(int64_t timeUs) override;
 
     bool setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) override;
 
@@ -20,7 +20,6 @@ public:
 
     void prepareDrawFrame() override;
 
-    void setDrawPboRes(PboRes **pboReses, int len) override;
 
     int getNeededPboCount() override;
 

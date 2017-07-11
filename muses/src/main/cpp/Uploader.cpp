@@ -147,11 +147,10 @@ void Uploader::handleStartUploader(EGLContext sharedContext) {
     glGenBuffers(mArrayLen, pboIds);
 
     for (int i = 0; i < mArrayLen; ++i) {
-        auto br = mPboResArray[i];
-
-        br.sync = nullptr;
-        br.state = PboResNotUsed;
-        br.pbo = pboIds[i];
+        auto br = &mPboResArray[i];
+//        br->sync = nullptr;
+        br->state = PboResNotUsed;
+        br->pbo = pboIds[i];
     }
 
     mStartedCv.notify_all();
@@ -207,7 +206,7 @@ void Uploader::releaseBuffer(PboRes *pboRes) {
 
 void Uploader::handleReleasePboBuf(PboRes *pRes) {
     pRes->state = PboResNotUsed;
-    pRes->sync = nullptr;
+//    pRes->sync = nullptr;
 
     if (mPendingReqs.size() > 0) {
         post(kWhatUploadBufAndGetPbo, mPendingReqs.front());
@@ -235,27 +234,31 @@ void Uploader::handleUploadAndGetPboBuf(UploadReq *pReq) {
     glBufferData(GL_PIXEL_UNPACK_BUFFER, (GLsizeiptr) pReq->size, pReq->buf, GL_STREAM_DRAW);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     pboRes->state = PboResReady;
-    pboRes->sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+//    pboRes->sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     pReq->pboRes = pboRes;
+    pReq->deal = true;
     mGetPboCv.notify_all();
 }
 
 PboRes *Uploader::uploadFrame(void *buf, size_t size) {
-    UploadReq req;
+    UploadReq *req = new UploadReq();
 
-    req.pboRes = nullptr;
-    req.buf = buf;
-    req.size = size;
-    req.deal = false;
+    req->pboRes = nullptr;
+    req->buf = buf;
+    req->size = size;
+    req->deal = false;
 
     std::unique_lock<std::mutex> lock(mUploadMutex);
-    post(kWhatUploadBufAndGetPbo, &req);
-    mGetPboCv.wait(lock, [req]() { return req.deal; });
-
-    return req.pboRes;
+    post(kWhatUploadBufAndGetPbo, req);
+    mGetPboCv.wait(lock, [req]() { return req->deal; });
+    auto r = req->pboRes;
+    delete req;
+    return r;
 }
 
 void Uploader::dataFillSuccess(RenderResRequest *pRequest) {
+//    LOGD("fill data index = %d , tak = %lld", pRequest->task->getPboResAt(pRequest->resIndex)->pbo,
+//         glCommon::systemnanotime() - pRequest->start);
     post(kWhatDataFillReady, pRequest);
 }
 
@@ -265,13 +268,17 @@ void Uploader::dataFillFail(RenderResRequest *pRequest) {
 
 void Uploader::handleDataFillReady(RenderResRequest *pRequest) {
     auto task = pRequest->task;
-    if (task->isTaskValid()) {
+    if (task->isPboResPrepared()) {
+        task->linkPboResToRender();
         post(kWhatDrawFire, task);
     }
 
+//    LOGI("fill data index = %d , tak = %lld", pRequest->task->getPboResAt(pRequest->resIndex)->pbo,
+//         glCommon::systemnanotime() - pRequest->start);
+
     delete pRequest;
 
-    if (task->isAllResProcessed() && !task->isTaskValid()) {
+    if (task->isAllResProcessed() && !task->isPboResPrepared()) {
         delete task;
     }
 

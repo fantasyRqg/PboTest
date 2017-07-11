@@ -5,24 +5,36 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+
 #include "PolygonOffsetRenderer.h"
 #include "../util/common.h"
+#include "../Uploader.h"
 
 
 void PolygonOffsetRenderer::prepareDrawFrame() {
 
 }
 
-void PolygonOffsetRenderer::setDrawPboRes(PboRes **pboReses, int len) {
-
-}
 
 int PolygonOffsetRenderer::getNeededPboCount() {
-    return 0;
+    return TEXTURE_COUNT;
 }
 
-void PolygonOffsetRenderer::drawFrame(long timeUs) {
+void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
+
+
+    for (int i = 0; i < TEXTURE_COUNT; ++i) {
+        auto pbores = mPboResArray[i];
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbores->pbo);
+        glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureId[i]);
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        glCommon::checkGlError("bind texture and pbo");
+
+    }
 
     glUseProgram(mProgram);
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
@@ -135,9 +147,10 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
             glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
-    glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
-    LOGV("render set up");
-    glCommon::checkGlError("set up");
+    glGenTextures(TEXTURE_COUNT, mTextureId);
+
+//    LOGV("render set up");
+//    glCommon::checkGlError("set up");
     return true;
 }
 
@@ -146,5 +159,6 @@ bool PolygonOffsetRenderer::tearDown() {
     glDeleteBuffers(1, &mVbo);
     glDeleteBuffers(2, &mIndicatesVbo[0]);
     glDeleteVertexArrays(1, &mVertexArray);
+    glDeleteTextures(TEXTURE_COUNT, mTextureId);
     return true;
 }

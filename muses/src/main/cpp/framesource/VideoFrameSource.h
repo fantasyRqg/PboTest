@@ -22,7 +22,7 @@ public:
      *
      * end time = durationMills;
      */
-    VideoFrameSource(std::string &videoPath);
+    VideoFrameSource(std::string videoPath);
 
     ~VideoFrameSource();
 

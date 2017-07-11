@@ -6,6 +6,7 @@
 #include <string.h>
 #include "Render.h"
 #include "../util/common.h"
+#include "../Uploader.h"
 
 #undef TAG
 #define TAG "EffectRender"
@@ -67,6 +68,20 @@ void Render::setRenderFbo(bool renderFbo) {
 }
 
 Render::Render() {}
+
+void Render::setDrawPboRes(PboRes **pboReses) {
+    mPboResArray = pboReses;
+}
+
+//void Render::makeSurePboUploaded() {
+//    for (int i = 0; i < getNeededPboCount(); ++i) {
+//        if (mPboResArray[i]->sync != nullptr) {
+//            glWaitSync(mPboResArray[i]->sync, 0, GL_TIMEOUT_IGNORED);
+//            glDeleteSync(mPboResArray[i]->sync);
+//            mPboResArray[i]->sync = nullptr;
+//        }
+//    }
+//}
 
 
 

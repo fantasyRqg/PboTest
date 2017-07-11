@@ -2,19 +2,26 @@
 // Created by ranqingguo on 7/5/17.
 //
 
+
 #include <thread>
 #include <media/NdkMediaCodec.h>
+#include <android/native_window_jni.h>
 
 #include "VideoFrameSource.h"
 #include "DecodeThread.h"
+#include "../util/common.h"
 
-#define CODEC_WAIT_TIMEOUT 100000
+
+#undef TAG
+#define  TAG "VideoFrameSource"
+
+#define CODEC_WAIT_TIMEOUT 100
 
 
-VideoFrameSource::VideoFrameSource(std::string &videoPath)
+VideoFrameSource::VideoFrameSource(std::string videoPath)
         : IFrameSource(-1, -1), mVideoPath(videoPath) {
     mExtractor = AMediaExtractor_new();
-    AMediaExtractor_setDataSource(mExtractor, mVideoPath.data());
+    AMediaExtractor_setDataSource(mExtractor, mVideoPath.c_str());
     auto trackCount = AMediaExtractor_getTrackCount(mExtractor);
 
     std::string videoPrefix = "video/";
@@ -45,7 +52,8 @@ VideoFrameSource::VideoFrameSource(std::string &videoPath)
 
 bool VideoFrameSource::prepare(DecodeThread *decodeThread) {
     startMediaCodec();
-    decodeThread->queueInputBuffer(this);
+    while (queueInputBuffer() >= 0) {}
+//    decodeThread->queueInputBuffer(this);
     return true;
 }
 
@@ -82,7 +90,8 @@ void VideoFrameSource::initMediaInfo(AMediaFormat *format) {
     mStartUs = 0;
     AMediaFormat_getInt64(format, AMEDIAFORMAT_KEY_DURATION, (int64_t *) &mEndUs);
     AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, &mFrameRate);
-
+    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_WIDTH, &mWidth);
+    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_HEIGHT, &mHeight);
     if (!isOk()) {
         throw std::runtime_error("init video frame source failure");
     }
@@ -94,14 +103,16 @@ int VideoFrameSource::getFrameRate() const {
 
 
 void VideoFrameSource::startMediaCodec() {
-    if (mDecoderRun) {
-        return;
+    if (!mDecoderRun) {
+        mDecoder = AMediaCodec_createDecoderByType(mMimeType);
+        AMediaCodec_configure(mDecoder, mFormat, nullptr, nullptr, 0);
+        AMediaCodec_start(mDecoder);
+        mDecoderRun = true;
     }
 
-    mDecoder = AMediaCodec_createDecoderByType(mMimeType);
-    AMediaCodec_configure(mDecoder, mFormat, nullptr, nullptr, 0);
-    AMediaCodec_start(mDecoder);
-    mDecoderRun = true;
+    AMediaExtractor_seekTo(mExtractor, 0, AMEDIAEXTRACTOR_SEEK_NEXT_SYNC);
+    mSeeOutputEos = false;
+    mSeeOutputEos = false;
 }
 
 ssize_t VideoFrameSource::queueInputBuffer() {
@@ -121,10 +132,13 @@ ssize_t VideoFrameSource::queueInputBuffer() {
             AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, (size_t) sampleSize,
                                          (uint64_t) ptUs, flag);
         } else {
+            mSeeInputEos = true;
             AMediaCodec_queueInputBuffer(decoder, (size_t) index, 0, 0, 0,
                                          AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM);
             return -1;
         }
+
+        AMediaExtractor_advance(mExtractor);
     }
 
     return index;
@@ -141,16 +155,25 @@ int VideoFrameSource::dequeueOutputBuffer(GetFrameCallback callback) {
         size_t size = 0;
         auto buf = AMediaCodec_getOutputBuffer(decoder, (size_t) index, &size);
 
-        if (callback != nullptr)
+        if (callback != nullptr && size > 0)
             callback(index, buf, size, &info);
-
         AMediaCodec_releaseOutputBuffer(decoder, (size_t) index, false);
+
+        if ((info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) != 0) {
+            mSeeOutputEos = true;
+        }
+    }
+
+    if (index == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
+        auto format = AMediaCodec_getOutputFormat(decoder);
+
+        LOGI("format:%s", AMediaFormat_toString(format));
     }
     return index;
 }
 
 bool VideoFrameSource::isPrepared() {
-    return mDecoderRun;
+    return mDecoderRun && !mSeeOutputEos && !mSeeOutputEos;
 }
 
 bool VideoFrameSource::isVideo() {

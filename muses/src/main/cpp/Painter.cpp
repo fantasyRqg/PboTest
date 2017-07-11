@@ -86,12 +86,20 @@ void Painter::handle(int what, void *data) {
     }
 }
 
+int64_t last = glCommon::systemnanotime();
+
 void Painter::handleDrawRenderTask(RenderTask *pTask) {
-//    LOGD("handleDrawRenderTask");
+    LOGD("handleDrawRenderTask diff = %lld", glCommon::systemnanotime() - last);
+    last = glCommon::systemnanotime();
+
     pTask->draw();
 
+    if (mFirstDisplayUs <= 0) {
+        mFirstDisplayUs = glCommon::systemnanotime() / 1000L;
+    }
+
     auto pt = pTask->getPresentTimeUs();
-    auto curr = glCommon::systemnanotime() / 1000LL;
+    auto curr = glCommon::systemnanotime() / 1000L;
     auto sleepUs = pt - (curr - mFirstDisplayUs);
 
 //    LOGD("sleep = %10lld pt = %10lld curr = %10lld first = %10lld",
@@ -184,7 +192,7 @@ void Painter::postCreateWindowSurface(ANativeWindow *pWindow) {
 }
 
 void Painter::handleNewPlay() {
-    mFirstDisplayUs = glCommon::systemnanotime() / 1000LL;
+    mFirstDisplayUs = -1;
     LOGI("first = %lld", mFirstDisplayUs);
 }
 

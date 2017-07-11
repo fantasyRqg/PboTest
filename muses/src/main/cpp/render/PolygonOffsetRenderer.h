@@ -17,21 +17,23 @@ class PolygonOffsetRenderer : public Render {
 public:
     void prepareDrawFrame() override;
 
-    void setDrawPboRes(PboRes **pboReses, int len) override;
 
     int getNeededPboCount() override;
 
-    void drawFrame(long timeUs) override;
+    void drawFrame(int64_t timeUs) override;
 
     bool setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) override;
 
     bool tearDown() override;
 
 private:
+    const static int TEXTURE_COUNT = 2;
     GLuint mProgram;
     GLuint mVertexArray;
     GLuint mVbo;
     GLuint mIndicatesVbo[2];
+
+    GLuint mTextureId[TEXTURE_COUNT];
 
     GLint mMvpLocation;
 

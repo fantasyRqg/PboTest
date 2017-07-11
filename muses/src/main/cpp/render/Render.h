@@ -5,8 +5,12 @@
 #ifndef MUSES_RENDER_H
 #define MUSES_RENDER_H
 
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#endif //GL_GLEXT_PROTOTYPES
 
 #include <GLES3/gl3.h>
+#include <GLES2/gl2ext.h>
 #include <android/asset_manager.h>
 #include "../gl/surface/EglSurfaceBase.h"
 
@@ -38,7 +42,7 @@ public:
      * 填入正在上传资源
      * @param pbos
      */
-    virtual void setDrawPboRes(PboRes **pboReses, int len) =0;
+    void setDrawPboRes(PboRes **pboReses);
 
     virtual int getNeededPboCount() = 0;
 
@@ -46,13 +50,15 @@ public:
      * make sure pbo is ready ,by check pbo sync
      * @param timeUs draw time us
      */
-    virtual void drawFrame(long timeUs) = 0;
+    virtual void drawFrame(int64_t timeUs) = 0;
 
     virtual bool setUp(AAssetManager *amgr, EglSurfaceBase *eglSurface) = 0;
 
     virtual bool tearDown() = 0;
 
     GLuint loadShader(AAssetManager *amgr, const char *fname, GLenum type);
+
+//    void makeSurePboUploaded();
 
     bool isRenderFbo() const;
 
@@ -63,6 +69,7 @@ public:
 protected:
     int mZOrder;
     bool mRenderFbo = false;
+    PboRes **mPboResArray;
 };
 
 

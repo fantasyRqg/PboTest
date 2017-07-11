@@ -46,6 +46,10 @@ public:
     long getStartUs() const;
 
     long getEndUs() const;
+
+    int getWidth() const;
+
+    int getHeight() const;
 //
 //    /**
 //     * first frame on effect timeLine
@@ -75,6 +79,8 @@ protected:
     long mStartUs = -1;
     long mEndUs = -1;
 
+    int mWidth;
+    int mHeight;
 
 //    long mFrameStartMills;
 //

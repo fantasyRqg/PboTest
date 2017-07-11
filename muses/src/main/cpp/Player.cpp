@@ -181,7 +181,17 @@ void Player::playOneFrame(EffectManager *pManager) {
             effect->setPrepared(true);
         }
 
-        auto task = effect->nextRenderTask();
+        RenderTask *task = nullptr;
+        try {
+            task = effect->nextRenderTask();
+        } catch (std::runtime_error e) {
+            postOnError(new std::runtime_error(e.what()));
+            if (effect->isPrepared()) {
+                mUploader->releaseEffect(effect);
+            }
+            return;
+        }
+
         if (task != nullptr) {
             mUploader->postRenderTask(task);
         } else {

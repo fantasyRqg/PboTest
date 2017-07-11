@@ -70,7 +70,7 @@ RenderTask::~RenderTask() {
     }
 }
 
-bool RenderTask::isTaskValid() {
+bool RenderTask::isPboResPrepared() {
     for (int i = 0; i < mFrameSourceVector.size(); ++i) {
         if (mPboResArray[i] == nullptr || !mPboResArray[i]->isReady()) {
             return false;
@@ -122,6 +122,15 @@ bool RenderTask::isAllResProcessed() {
 
 int64_t RenderTask::getPresentTimeUs() const {
     return mPresentTimeUs;
+}
+
+void RenderTask::linkPboResToRender() {
+    int c = 0;
+    for (auto r : mRenderVector) {
+        auto need = r->getNeededPboCount();
+        r->setDrawPboRes(mPboResArray + c);
+        c += need;
+    }
 }
 
 

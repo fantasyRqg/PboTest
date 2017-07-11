@@ -7,7 +7,6 @@
 
 #include "../util/common.h"
 #include "PboTestRender.h"
-#include "../gl/surface/EglSurfaceBase.h"
 
 
 #undef TAG
@@ -56,7 +55,7 @@ void patternPixelSource(unsigned char *buf, size_t len, int width, int height, i
 }
 
 
-void PboTestRender::drawFrame(long millsecond) {
+void PboTestRender::drawFrame(int64_t timeUs) {
     using namespace glCommon;
 
     glBindVertexArray(mVertexArrayId);
@@ -261,9 +260,6 @@ void PboTestRender::prepareDrawFrame() {
 
 }
 
-void PboTestRender::setDrawPboRes(PboRes **pboReses, int len) {
-
-}
 
 int PboTestRender::getNeededPboCount() {
     return 0;

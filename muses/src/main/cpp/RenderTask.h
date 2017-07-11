@@ -22,7 +22,7 @@ public:
 //
 //    void setDrawPboRes();
 
-    bool isTaskValid();
+    bool isPboResPrepared();
 
     IFrameSource *getFrameSourceAt(int index);
 
@@ -39,6 +39,8 @@ public:
     bool isAllResProcessed();
 
     int64_t getPresentTimeUs() const;
+
+    void linkPboResToRender();
 
 private:
     int64_t mPresentTimeUs;

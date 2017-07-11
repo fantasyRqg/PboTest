@@ -28,7 +28,9 @@ class Uploader;
 
 typedef struct PboRes {
     GLuint pbo;
-    GLsync sync;
+    int width;
+    int height;
+//    GLsync sync;
     int state;
 //    Uploader *uploader;
 
@@ -41,6 +43,7 @@ typedef struct RenderResRequest {
 
     RenderTask *task;
     int resIndex;
+    int64_t start;
 } RenderResRequest;
 
 struct UploadReq;
