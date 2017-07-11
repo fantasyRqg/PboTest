@@ -122,6 +122,7 @@ void Painter::quit() {
 
 void Painter::handleCreateWindowSurface(NativeWindowType pWindow) {
     mEglSurface = new WindowSurface(mEglCore, pWindow, true);
+
     mEglCore->makeCurrent(mEglSurface->getEglSurface());
 }
 

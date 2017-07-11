@@ -15,5 +15,5 @@ void WindowSurface::release() {
 
 WindowSurface::WindowSurface(EglCore *eglCore, NativeWindowType window, bool releaseWindow)
         : EglSurfaceBase(eglCore), mWindow(window), mReleaseWindow(releaseWindow) {
-
+    createWindowSurface(window);
 }
