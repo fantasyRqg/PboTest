@@ -148,6 +148,32 @@ void Painter::handleCreateWindowSurface(NativeWindowType pWindow) {
     mEglSurface = new WindowSurface(mEglCore, pWindow, true);
 
     mEglCore->makeCurrent(mEglSurface->getEglSurface());
+
+
+    ANativeWindow_Buffer buffer;
+    ARect rect;
+    ANativeWindow_lock(pWindow, &buffer, &rect);
+
+    ANativeWindow_release(pWindow);
+
+    const EGLint attrs[] =
+            {
+                    EGL_IMAGE_PRESERVED_KHR,
+                    EGL_TRUE,
+                    EGL_NONE,
+                    EGL_NONE
+            };
+
+    auto pEGLImage = eglCreateImageKHR(eglGetCurrentDisplay(),
+                                       eglGetCurrentContext(),
+                                       EGL_NATIVE_BUFFER_ANDROID,
+                                       (EGLClientBuffer) &buffer,
+                                       attrs);
+    if (pEGLImage == EGL_NO_IMAGE_KHR) {
+        LOGI("Error: eglCreateImage() failed at %s:%in", __FILE__, __LINE__);
+    }
+
+
 }
 
 void Painter::handleCreateOffScreenSurface() {
