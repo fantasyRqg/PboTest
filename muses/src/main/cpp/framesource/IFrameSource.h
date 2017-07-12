@@ -8,13 +8,16 @@
 #include <algorithm>
 #include <functional>
 #include <media/NdkMediaCodec.h>
+#include <jni.h>
 
-#define GET_FRAME_CALLBACK (int index, void *buf, int size, AMediaCodecBufferInfo *info) -> void
+//#define GET_FRAME_CALLBACK (int index, void *buf, int size, AMediaCodecBufferInfo *info) -> void
 
-typedef std::function<void(int index, void *buf, int size,
-                           AMediaCodecBufferInfo *info)> GetFrameCallback;
+//typedef std::function<void(int index, void *buf, int size,
+//                           AMediaCodecBufferInfo *info)> GetFrameCallback;
 
 class DecodeThread;
+
+struct RenderResRequest;
 
 class IFrameSource {
 
@@ -26,12 +29,33 @@ public:
      */
     IFrameSource(long startMills, long endMills);
 
+    /**
+     * run on painter
+     * @param env
+     * @param textName
+     * @param other
+     * @return
+     */
+    virtual bool bindTexture(JNIEnv *env, int textName, void *other) = 0;
+
+    /**
+     * run on painter
+     * @param env
+     * @return
+     */
+    virtual bool unbindTexture(JNIEnv *env) = 0;
+
+    /**
+     * run on painter
+     * @param env
+     */
+    virtual void updateImage(JNIEnv *env) = 0;
 
     virtual bool prepare(DecodeThread *decodeThread) = 0;
 
     virtual bool release() = 0;
 
-    virtual bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) = 0;
+    virtual bool requestFrame(DecodeThread *decodeThread, RenderResRequest *pReq) = 0;
 
     virtual bool isOk() = 0;
 
@@ -43,6 +67,7 @@ public:
 
     virtual std::string getName()= 0;
 
+
     long getStartUs() const;
 
     long getEndUs() const;
@@ -50,29 +75,6 @@ public:
     int getWidth() const;
 
     int getHeight() const;
-//
-//    /**
-//     * first frame on effect timeLine
-//     * @return
-//     */
-//    long getFrameStartMills() const;
-//
-//    void setFrameStartMills(long frameStartMills);
-//
-//    /**
-//     * play start = start -duration
-//     * @param durationMills
-//     * @return
-//     */
-//    bool appendStartMills(long durationMills);
-//
-//    /**
-//     * play end = end - duration
-//     * @param durationMills
-//     * @return
-//     */
-//    bool appendEndMills(long durationMills);
-
 
 
 protected:

@@ -15,10 +15,12 @@
 
 class PolygonOffsetRenderer : public Render {
 public:
+    PolygonOffsetRenderer();
+
     void prepareDrawFrame() override;
 
 
-    int getNeededPboCount() override;
+    int getTextureCount() override;
 
     void drawFrame(int64_t timeUs) override;
 
@@ -32,8 +34,6 @@ private:
     GLuint mVertexArray;
     GLuint mVbo;
     GLuint mIndicatesVbo[2];
-
-    GLuint mTextureId[TEXTURE_COUNT];
 
     GLint mMvpLocation;
 

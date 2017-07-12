@@ -1,53 +1,64 @@
 #include <jni.h>
 #include <string>
 #include <android/asset_manager_jni.h>
-#include <thread>
-#include <android/native_window.h>
 #include <android/native_window_jni.h>
 
 
 #include "gl/EglCore.h"
-#include "framesource/DecodeThread.h"
-#include "Painter.h"
-#include "Uploader.h"
-#include "effect/TestEffect.h"
 #include "util/common.h"
+#include "NativeSurfaceTexture.h"
+#include "EffectLine.h"
+#include "effect/TestEffect.h"
+#include "EffectManager.h"
+#include "Player.h"
 
 #undef TAG
 #define TAG "native-lib"
 
+static JavaVM *jvm;
 
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_rqg_fantasy_muses_Native_stringFromJNI(JNIEnv *env, jclass type) {
+bool tttest(JNIEnv *env, int texNam) {
+    auto nstClass = env->FindClass("rqg/fantasy/muses/NativeSurfaceTexture");
+    if (nstClass == nullptr) {
+        return false;
+    }
 
+    auto updateImageMethodId = env->GetMethodID(nstClass, "updateTexImage", "()V");
+    if (updateImageMethodId == nullptr) {
+        return false;
+    }
 
-    std::string hello = "Hello from C++";
+    auto initId = env->GetMethodID(nstClass, "<init>", "(I)V");
+    if (initId == nullptr) {
+        return false;
+    }
 
+    auto handlerId = env->GetFieldID(nstClass, "mNativeHandler", "J");
+    if (handlerId == nullptr) {
+        return false;
+    }
 
-    return env->NewStringUTF(hello.c_str());
+    auto object = env->NewObject(nstClass, initId, texNam);
+    auto jst = env->NewGlobalRef(object);
+    for (int i = -10; i < 100; ++i) {
+        env->SetLongField(jst, handlerId, (jlong) i);
+        auto hv = env->GetLongField(jst, handlerId);
+        LOGD("get handler = %lld", hv);
+    }
+
+    return false;
 }
 
+void onSurfaceCreated(JNIEnv *env, jclass type, jobject surface, jobject assetManager) {
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_rqg_fantasy_muses_Native_testMuses(JNIEnv *env, jclass type, jobject assetManager) {
-
-    AAssetManager *as = AAssetManager_fromJava(env, assetManager);
-
-
-}extern "C"
-JNIEXPORT void JNICALL
-Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject assetManager,
-                                               jobject surface) {
+//    tttest(env, 0);
 
     AAssetManager *as = AAssetManager_fromJava(env, assetManager);
     auto pWindow = ANativeWindow_fromSurface(env, surface);
 
     DecodeThread *decodeThread = new DecodeThread();
-    Painter *painter = new Painter(as);
-    Player *player = new Player();
-    Uploader *uploader = new Uploader(painter, decodeThread, player, 4);
+    Painter *painter = new Painter(as, jvm);
+    Player *player = new Player(decodeThread, painter);
 
     painter->postCreateWindowSurface(pWindow);
 
@@ -60,12 +71,98 @@ Java_rqg_fantasy_muses_Native_onSurfaceCreated(JNIEnv *env, jclass type, jobject
         return;
     }
 
+    EffectManager *em = new EffectManager(24, el);
 
-//    EffectManager *em = new EffectManager(24, el);
-//
-//    player->play(em);
-
-//    painter->quit();
-//    uploader->quit();
-//    decodeThread->quit();
+    player->play(em);
 }
+
+jboolean nativeInit(JNIEnv *env, jclass type) {
+    auto status = env->GetJavaVM(&jvm);
+    if (status != 0) {
+        LOGE("get java vm failure");
+
+        return JNI_FALSE;
+    }
+
+    return (jboolean) NativeSurfaceTexture::initClass(env);
+}
+
+void onFrameAvailable(JNIEnv *env, jclass type, jlong handler) {
+    ((NativeSurfaceTexture *) handler)->onFrameAvailable();
+}
+
+//------------------------------------------------------------------------------------------------------------
+static JNINativeMethod gGLES3JniViewMethods[] = {
+        {"onSurfaceCreated", "(Landroid/view/Surface;Landroid/content/res/AssetManager;)V", (void *) onSurfaceCreated},
+        {"onFrameAvailable", "(J)V",                                                        (void *) onFrameAvailable},
+        {"nativeInit",       "()Z",                                                         (void *) nativeInit},
+};
+
+static const char *classPathName = "rqg/fantasy/muses/MusesNative";
+
+
+/*
+ * Register several native methods for one class.
+ */
+static int registerNativeMethods(JNIEnv *env, const char *className,
+                                 JNINativeMethod *gMethods, int numMethods) {
+    jclass clazz;
+    clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        LOGE("MusesNative registration unable to find class '%s'", className);
+        return JNI_FALSE;
+    }
+    if (env->RegisterNatives(clazz, gMethods, numMethods) < 0) {
+        LOGE("RegisterNatives failed for '%s'", className);
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
+}
+
+
+/*
+ * Register native methods for all classes we know about.
+ *
+ * returns JNI_TRUE on success.
+ */
+static int registerNatives(JNIEnv *env) {
+    if (!registerNativeMethods(env, classPathName,
+                               gGLES3JniViewMethods,
+                               sizeof(gGLES3JniViewMethods) / sizeof(gGLES3JniViewMethods[0]))) {
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
+}
+
+/*
+ * This is called by the VM when the shared library is first loaded.
+ */
+
+typedef union {
+    JNIEnv *env;
+    void *venv;
+} UnionJNIEnvToVoid;
+
+jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    UnionJNIEnvToVoid uenv;
+    uenv.venv = NULL;
+    jint result = -1;
+    JNIEnv *env = NULL;
+
+    LOGI("JNI_OnLoad");
+    if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_6) != JNI_OK) {
+        LOGE("ERROR: GetEnv failed");
+        goto bail;
+    }
+    env = uenv.env;
+    if (registerNatives(env) != JNI_TRUE) {
+        LOGE("ERROR: registerNatives failed");
+        goto bail;
+    }
+    result = JNI_VERSION_1_6;
+    bail:
+    return result;
+}
+
+
+

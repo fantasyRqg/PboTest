@@ -8,8 +8,8 @@
 #include <android/native_window_jni.h>
 
 #include "VideoFrameSource.h"
-#include "DecodeThread.h"
 #include "../util/common.h"
+#include "../DecodeThread.h"
 
 
 #undef TAG
@@ -57,8 +57,9 @@ bool VideoFrameSource::prepare(DecodeThread *decodeThread) {
     return true;
 }
 
-bool VideoFrameSource::requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) {
-    auto index = dequeueOutputBuffer(callback);
+
+bool VideoFrameSource::requestFrame(DecodeThread *decodeThread, RenderResRequest *pReq) {
+    auto index = dequeueOutputBuffer(pReq);
     decodeThread->queueInputBuffer(this);
     return index >= 0;
 }
@@ -105,7 +106,7 @@ int VideoFrameSource::getFrameRate() const {
 void VideoFrameSource::startMediaCodec() {
     if (!mDecoderRun) {
         mDecoder = AMediaCodec_createDecoderByType(mMimeType);
-        AMediaCodec_configure(mDecoder, mFormat, nullptr, nullptr, 0);
+        AMediaCodec_configure(mDecoder, mFormat, mSurfaceTexture->getNativeWindow(), nullptr, 0);
         AMediaCodec_start(mDecoder);
         mDecoderRun = true;
     }
@@ -144,7 +145,7 @@ ssize_t VideoFrameSource::queueInputBuffer() {
     return index;
 }
 
-int VideoFrameSource::dequeueOutputBuffer(GetFrameCallback callback) {
+int VideoFrameSource::dequeueOutputBuffer(RenderResRequest *pReq) {
     if (!mDecoderRun) {
         return -1;
     }
@@ -155,9 +156,12 @@ int VideoFrameSource::dequeueOutputBuffer(GetFrameCallback callback) {
         size_t size = 0;
         auto buf = AMediaCodec_getOutputBuffer(decoder, (size_t) index, &size);
 
-        if (callback != nullptr && size > 0)
-            callback(index, buf, size, &info);
-        AMediaCodec_releaseOutputBuffer(decoder, (size_t) index, false);
+        if (pReq != nullptr) {
+            mSurfaceTexture->setWaitFrameReady(pReq);
+            AMediaCodec_releaseOutputBuffer(decoder, (size_t) index, true);
+        } else {
+            AMediaCodec_releaseOutputBuffer(decoder, (size_t) index, false);
+        }
 
         if ((info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) != 0) {
             mSeeOutputEos = true;
@@ -173,7 +177,7 @@ int VideoFrameSource::dequeueOutputBuffer(GetFrameCallback callback) {
 }
 
 bool VideoFrameSource::isPrepared() {
-    return mDecoderRun && !mSeeOutputEos && !mSeeOutputEos;
+    return mDecoderRun && !mSeeOutputEos;
 }
 
 bool VideoFrameSource::isVideo() {
@@ -191,7 +195,27 @@ std::string VideoFrameSource::getName() {
 bool VideoFrameSource::release() {
     auto stopR = AMediaCodec_stop(mDecoder);
     auto delR = AMediaCodec_delete(mDecoder);
+
     mDecoder = nullptr;
     mDecoderRun = false;
     return stopR == AMEDIA_OK && delR == AMEDIA_OK;
+}
+
+
+bool VideoFrameSource::bindTexture(JNIEnv *env, int textName, void *other) {
+    mSurfaceTexture = new NativeSurfaceTexture(env, textName);
+    return true;
+}
+
+bool VideoFrameSource::unbindTexture(JNIEnv *env) {
+    if (mSurfaceTexture != nullptr) {
+        mSurfaceTexture->release(env);
+        mSurfaceTexture = nullptr;
+    }
+    return true;
+}
+
+void VideoFrameSource::updateImage(JNIEnv *env) {
+    if (mSurfaceTexture != nullptr)
+        mSurfaceTexture->updateImage(env);
 }

@@ -4,7 +4,6 @@
 
 #include "Player.h"
 #include "util/common.h"
-#include "Uploader.h"
 
 #undef TAG
 #define TAG "Player"
@@ -19,6 +18,8 @@ enum {
     kWhatSpeedChange,
     kWhatNextFrame,
     kWhatOnError,
+    kWhatRenderTaskFail,
+    kWhatTaskFinished,
 };
 
 std::string PlayerEnumStr[]{
@@ -31,6 +32,8 @@ std::string PlayerEnumStr[]{
         "kWhatSpeedChange",
         "kWhatNextFrame",
         "kWhatOnError",
+        "kWhatRenderTaskFail",
+        "kWhatTaskFinished",
 };
 
 typedef struct Player::SeekReq {
@@ -86,7 +89,7 @@ void Player::postOnError(std::runtime_error *pError) {
 
 
 void Player::handle(int what, void *data) {
-//    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
+    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
     switch (what) {
         case kWhatPlay:
             handlePlay((EffectManager *) data);
@@ -120,6 +123,13 @@ void Player::handle(int what, void *data) {
         }
             break;
 
+        case kWhatRenderTaskFail:
+            handleRenderTaskFail((RenderTask *) data);
+            break;
+
+        case kWhatTaskFinished:
+            handleTaskFinished((RenderTask *) data);
+            break;
         default:
             break;
     }
@@ -128,7 +138,7 @@ void Player::handle(int what, void *data) {
 void Player::handlePlay(EffectManager *pManager) {
     mCurrentPlay = pManager;
     mPlayRun = true;
-    mUploader->postNewPlay();
+    mPainter->postNewPlay();
     playOneFrame(mCurrentPlay);
 }
 
@@ -162,10 +172,10 @@ void Player::handleReplay() {
 }
 
 void Player::handleSpeedChange(SpeedReq *pReq) {
-    if (mCurrentPlay != nullptr) {
-        mPlayRun = true;
-        playOneFrame(mCurrentPlay);
-    }
+//    if (mCurrentPlay != nullptr) {
+//        mPlayRun = true;
+//        playOneFrame(mCurrentPlay);
+//    }
 }
 
 void Player::handleNextFrame() {
@@ -177,8 +187,9 @@ void Player::playOneFrame(EffectManager *pManager) {
 
     if (effect != nullptr && effect->hasNextFrame()) {
         if (!effect->isPrepared()) {
-            mUploader->prepareEffect(effect);
+            mPainter->setUpRender(effect);
             effect->setPrepared(true);
+            return;
         }
 
         RenderTask *task = nullptr;
@@ -187,13 +198,13 @@ void Player::playOneFrame(EffectManager *pManager) {
         } catch (std::runtime_error e) {
             postOnError(new std::runtime_error(e.what()));
             if (effect->isPrepared()) {
-                mUploader->releaseEffect(effect);
+                mDecodeThread->releaseEffect(effect);
             }
             return;
         }
 
         if (task != nullptr) {
-            mUploader->postRenderTask(task);
+            mDecodeThread->postRenderTask(task);
         } else {
             advanceEffectManager(pManager, effect);
         }
@@ -204,7 +215,7 @@ void Player::playOneFrame(EffectManager *pManager) {
 
 void Player::advanceEffectManager(EffectManager *pManager, Effect *effect) {
     if (effect != nullptr) {
-        mUploader->releaseEffect(effect);
+        mDecodeThread->releaseEffect(effect);
         effect->setPrepared(false);
     }
 
@@ -213,13 +224,31 @@ void Player::advanceEffectManager(EffectManager *pManager, Effect *effect) {
     }
 }
 
-void Player::bindUploader(Uploader *uploader) {
-    mUploader = uploader;
+
+Player::Player(DecodeThread *decodeThread, Painter *painter)
+        : Looper("Player"), mDecodeThread(decodeThread), mPainter(painter) {
+    mDecodeThread->bindComponent(mPainter, this);
+    mPainter->bindComponent(this, mDecodeThread);
 }
 
-Player::Player() : Looper("Player") {
-
+void Player::renderTaskFail(RenderTask *pTask) {
+    post(kWhatRenderTaskFail, pTask);
 }
+
+void Player::postTaskFinished(RenderTask *pTask) {
+    post(kWhatTaskFinished, pTask);
+}
+
+void Player::handleRenderTaskFail(RenderTask *pTask) {
+    requestNextFrame();
+}
+
+void Player::handleTaskFinished(RenderTask *pTask) {
+    delete pTask;
+}
+
+
+
 
 
 

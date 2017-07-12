@@ -9,6 +9,7 @@
 #include <media/NdkMediaExtractor.h>
 
 #include "IFrameSource.h"
+#include "../NativeSurfaceTexture.h"
 //#include "DecodeThread.h"
 
 
@@ -38,7 +39,6 @@ public:
 
     bool prepare(DecodeThread *decodeThread) override;
 
-    bool requestFrame(DecodeThread *decodeThread, GetFrameCallback &&callback) override;
 
     std::string getName() override;
 
@@ -46,6 +46,14 @@ public:
 
 
     ssize_t queueInputBuffer();
+
+    bool requestFrame(DecodeThread *decodeThread, RenderResRequest *pReq) override;
+
+    bool bindTexture(JNIEnv *env, int textName, void *other) override;
+
+    bool unbindTexture(JNIEnv *env) override;
+
+    void updateImage(JNIEnv *env) override;
 
 private:
 
@@ -60,13 +68,14 @@ private:
     AMediaCodec *mDecoder;
     const char *mMimeType = nullptr;
     bool mDecoderRun = false;
+    NativeSurfaceTexture *mSurfaceTexture;
 
     bool mSeeOutputEos;
     bool mSeeInputEos;
 
     void startMediaCodec();
 
-    int dequeueOutputBuffer(GetFrameCallback callback);
+    int dequeueOutputBuffer(RenderResRequest *pReq);
 };
 
 

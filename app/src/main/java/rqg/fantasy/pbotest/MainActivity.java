@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import rqg.fantasy.muses.Native;
+import rqg.fantasy.muses.MusesNative;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
         // Example of a call to a native method
         SurfaceView surfaceView = findViewById(R.id.sample_surface);
 
@@ -38,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
                 Log.d(TAG, "surfaceCreated() called with: surfaceHolder = [" + surfaceHolder + "]");
-                Native.onSurfaceCreated(getAssets(), surfaceHolder.getSurface());
+                MusesNative.onSurfaceCreated(surfaceHolder.getSurface(), getAssets());
             }
 
             @Override

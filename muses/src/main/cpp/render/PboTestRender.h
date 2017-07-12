@@ -21,7 +21,7 @@ public:
     void prepareDrawFrame() override;
 
 
-    int getNeededPboCount() override;
+    int getTextureCount() override;
 
 
 private:

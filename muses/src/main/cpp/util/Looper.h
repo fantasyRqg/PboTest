@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <jni.h>
 
 struct LooperMessage;
 
@@ -34,12 +35,12 @@ public:
 protected:
     virtual void handle(int what, void *data) = 0;
 
+    virtual void loop();
+
     std::string mName;
-
 private:
-    void tailAppendMessage(LooperMessage *message);
 
-    void loop();
+    void tailAppendMessage(LooperMessage *message);
 
     std::queue<LooperMessage *> mMsgQueue;
 
@@ -49,6 +50,8 @@ private:
     std::condition_variable mNewMsgCv;
 
     bool mRunning;
+
+
 
 };
 

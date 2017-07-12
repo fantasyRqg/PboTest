@@ -4,8 +4,12 @@
 
 #include "RenderTask.h"
 #include "exception/IlleaglStateException.h"
-#include "Uploader.h"
 
+enum {
+    kFrameReady,
+    kFrameFail,
+    kFrameUnset,
+};
 
 RenderTask::RenderTask(int64_t presentTimeUs,
                        const std::vector<std::shared_ptr<IFrameSource>> &frameSourceVector,
@@ -14,7 +18,7 @@ RenderTask::RenderTask(int64_t presentTimeUs,
     auto c = 0;
 
     for (int i = 0; i < mRenderVector.size(); ++i) {
-        c += mRenderVector[i]->getNeededPboCount();
+        c += mRenderVector[i]->getTextureCount();
     }
 
     unsigned int size = mFrameSourceVector.size();
@@ -23,14 +27,12 @@ RenderTask::RenderTask(int64_t presentTimeUs,
     }
 
 
-    mPboResArray = new PboRes *[size];
     mSkipFrameArray = new int[size];
-    mProcessedMark = new bool[size];
+    mFrameMark = new int[size];
 
     for (int i = 0; i < size; ++i) {
-        mPboResArray[i] = nullptr;
         mSkipFrameArray[i] = 0;
-        mProcessedMark[i] = false;
+        mFrameMark[i] = kFrameUnset;
     }
 
 }
@@ -59,20 +61,18 @@ void RenderTask::draw() {
 //}
 
 RenderTask::~RenderTask() {
-    if (mPboResArray != nullptr)
-        delete[] mPboResArray;
 
     if (mSkipFrameArray != nullptr)
         delete[] mSkipFrameArray;
 
-    if (mProcessedMark != nullptr) {
-        delete[] mProcessedMark;
+    if (mFrameMark != nullptr) {
+        delete[] mFrameMark;
     }
 }
 
-bool RenderTask::isPboResPrepared() {
+bool RenderTask::isFramePrepared() {
     for (int i = 0; i < mFrameSourceVector.size(); ++i) {
-        if (mPboResArray[i] == nullptr || !mPboResArray[i]->isReady()) {
+        if (mFrameMark[i] != kFrameReady) {
             return false;
         }
     }
@@ -91,12 +91,6 @@ IFrameSource *RenderTask::getFrameSourceAt(int index) {
     return mFrameSourceVector[index].get();
 }
 
-PboRes *RenderTask::getPboResAt(int index) {
-    if (index >= mFrameSourceVector.size()) {
-        return nullptr;
-    }
-    return mPboResArray[index];
-}
 
 int RenderTask::getSkipFrameAt(int index) {
     if (index >= mFrameSourceVector.size()) {
@@ -106,14 +100,10 @@ int RenderTask::getSkipFrameAt(int index) {
     return mSkipFrameArray[index];
 }
 
-void RenderTask::setReadyPboRes(PboRes *pRes, int i) {
-    mPboResArray[i] = pRes;
-    mProcessedMark[i] = true;
-}
 
-bool RenderTask::isAllResProcessed() {
+bool RenderTask::isAllFrameProcessed() {
     for (int i = 0; i < mFrameSourceVector.size(); ++i) {
-        if (!mProcessedMark[i]) {
+        if (mFrameMark[i] == kFrameUnset) {
             return false;
         }
     }
@@ -124,14 +114,21 @@ int64_t RenderTask::getPresentTimeUs() const {
     return mPresentTimeUs;
 }
 
-void RenderTask::linkPboResToRender() {
-    int c = 0;
-    for (auto r : mRenderVector) {
-        auto need = r->getNeededPboCount();
-        r->setDrawPboRes(mPboResArray + c);
-        c += need;
+void RenderTask::updateImage(JNIEnv *pEnv) {
+    for (auto fs : mFrameSourceVector) {
+        fs->updateImage(pEnv);
     }
 }
+
+void RenderTask::setFrameReady(bool ready, int i) {
+    if (ready) {
+        mFrameMark[i] = kFrameReady;
+    } else {
+        mFrameMark[i] = kFrameFail;
+    };
+}
+
+
 
 
 //

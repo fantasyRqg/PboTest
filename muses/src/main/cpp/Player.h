@@ -9,16 +9,16 @@
 
 #include "util/Looper.h"
 #include "EffectManager.h"
+#include "DecodeThread.h"
+#include "Painter.h"
 
-
-class Uploader;
 
 class Painter;
 
 
 class Player : public Looper {
 public:
-    Player();
+    Player(DecodeThread *decodeThread, Painter *painter);
 
     void play(EffectManager *pEm);
 
@@ -38,14 +38,19 @@ public:
 
     void postOnError(std::runtime_error *pError);
 
-    void bindUploader(Uploader *uploader);
+
+    void renderTaskFail(RenderTask *pTask);
+
+    void postTaskFinished(RenderTask *pTask);
 
 private:
     struct SeekReq;
     struct SpeedReq;
 
+    DecodeThread *mDecodeThread;
+    Painter *mPainter;
+
     EffectManager *mCurrentPlay;
-    Uploader *mUploader;
     bool mPlayRun = false;
 
     void handle(int what, void *data) override;
@@ -69,6 +74,10 @@ private:
     void playOneFrame(EffectManager *pManager);
 
     void advanceEffectManager(EffectManager *pManager, Effect *effect);
+
+    void handleRenderTaskFail(RenderTask *pTask);
+
+    void handleTaskFinished(RenderTask *pTask);
 };
 
 

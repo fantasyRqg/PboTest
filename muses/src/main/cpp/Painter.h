@@ -12,15 +12,16 @@
 #include "effect/Effect.h"
 
 
-class Uploader;
+class Player;
 
+class DecodeThread;
 
 /**
  * response for draw frame
  */
 class Painter : public Looper {
 public:
-    Painter(AAssetManager *assetManager);
+    Painter(AAssetManager *assetManager, JavaVM *javaVM);
 
     virtual ~Painter();
 
@@ -29,7 +30,7 @@ public:
 
     void handleDrawRenderTask(RenderTask *pTask);
 
-    void bindUploader(Uploader *uploader);
+    void bindComponent(Player *player, DecodeThread *decodeThread);
 
     void quit() override;
 
@@ -42,11 +43,15 @@ public:
     void postNewPlay();
 
 private:
-    Uploader *mUploader;
     EglCore *mEglCore;
     EglSurfaceBase *mEglSurface;
     AAssetManager *mAssetManager;
-    int64_t  mFirstDisplayUs;
+    int64_t mFirstDisplayUs;
+    DecodeThread *mDecodeTread;
+    Player *mPlayer;
+
+    JavaVM *mJavaVm;
+    JNIEnv *mEnv;
 
     void handle(int what, void *data) override;
 
@@ -65,6 +70,9 @@ private:
     void handleRenderTearDown(Effect *pEffect);
 
     void handleNewPlay();
+
+protected:
+    void loop() override;
 };
 
 

@@ -15,7 +15,7 @@ void PolygonOffsetRenderer::prepareDrawFrame() {
 }
 
 
-int PolygonOffsetRenderer::getNeededPboCount() {
+int PolygonOffsetRenderer::getTextureCount() {
     return TEXTURE_COUNT;
 }
 
@@ -145,7 +145,7 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
             glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
-    glGenTextures(TEXTURE_COUNT, mTextureId);
+    glGenTextures(TEXTURE_COUNT, mTextureIds);
 
 //    LOGV("render set up");
 //    glCommon::checkGlError("set up");
@@ -157,6 +157,13 @@ bool PolygonOffsetRenderer::tearDown() {
     glDeleteBuffers(1, &mVbo);
     glDeleteBuffers(2, &mIndicatesVbo[0]);
     glDeleteVertexArrays(1, &mVertexArray);
-    glDeleteTextures(TEXTURE_COUNT, mTextureId);
+    glDeleteTextures(TEXTURE_COUNT, mTextureIds);
     return true;
 }
+
+PolygonOffsetRenderer::PolygonOffsetRenderer() : Render() {
+    mTextureIds = new GLuint[getTextureCount()];
+}
+
+
+

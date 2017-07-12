@@ -261,6 +261,6 @@ void PboTestRender::prepareDrawFrame() {
 }
 
 
-int PboTestRender::getNeededPboCount() {
+int PboTestRender::getTextureCount() {
     return 0;
 }

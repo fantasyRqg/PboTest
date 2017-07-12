@@ -38,13 +38,10 @@ public:
      */
     virtual void prepareDrawFrame() = 0;
 
-    /**
-     * 填入正在上传资源
-     * @param pbos
-     */
-    void setDrawPboRes(PboRes **pboReses);
 
-    virtual int getNeededPboCount() = 0;
+    GLuint getTextureIdAt(int index);
+
+    virtual int getTextureCount() = 0;
 
     /**
      * make sure pbo is ready ,by check pbo sync
@@ -64,12 +61,13 @@ public:
 
     void setRenderFbo(bool renderFbo);
 
-    Render();
+
+    virtual ~Render();
 
 protected:
     int mZOrder;
     bool mRenderFbo = false;
-    PboRes **mPboResArray;
+    GLuint *mTextureIds;
 };
 
 

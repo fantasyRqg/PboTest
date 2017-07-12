@@ -22,35 +22,34 @@ public:
 //
 //    void setDrawPboRes();
 
-    bool isPboResPrepared();
+    bool isFramePrepared();
 
     IFrameSource *getFrameSourceAt(int index);
 
     int getSkipFrameAt(int index);
 
-    PboRes *getPboResAt(int index);
-
     std::vector<std::shared_ptr<IFrameSource>> getFrameSourceVector();
 
     virtual ~RenderTask();
 
-    void setReadyPboRes(PboRes *pRes, int i);
+    void setFrameReady(bool ready, int i);
 
-    bool isAllResProcessed();
+    bool isAllFrameProcessed();
 
     int64_t getPresentTimeUs() const;
 
-    void linkPboResToRender();
+
+    void updateImage(JNIEnv *pEnv);
 
 private:
     int64_t mPresentTimeUs;
     std::vector<std::shared_ptr<IFrameSource>> mFrameSourceVector;
-    bool *mProcessedMark;
+    int *mFrameMark;
 
     std::vector<std::shared_ptr<Render>> mRenderVector;
 
     int *mSkipFrameArray;
-    PboRes **mPboResArray;
+
 
 //    /**
 //     * mark whether skip this render task, use for when error occur on load resources or on draw

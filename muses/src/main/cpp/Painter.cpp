@@ -4,9 +4,9 @@
 #include <android/asset_manager_jni.h>
 
 #include "Painter.h"
-#include "Uploader.h"
 #include "gl/surface/WindowSurface.h"
 #include "util/common.h"
+#include "Player.h"
 
 #undef TAG
 #define TAG "Painter"
@@ -32,20 +32,36 @@ std::string painterStr[]{
         "kWhatDestroySurface",
         "kWhatRenderSetup",
         "kWhatRenderTearDown",
+        "kWhatNewPlay",
 };
 
 
-Painter::Painter(AAssetManager *assetManager) : Looper("Painter"), mAssetManager(assetManager) {
-
+Painter::Painter(AAssetManager *assetManager, JavaVM *javaVM) :
+        Looper("Painter"),
+        mAssetManager(assetManager), mJavaVm(javaVM) {
+    post(kWhatStart, nullptr);
 }
 
+void Painter::loop() {
+
+    auto result = mJavaVm->AttachCurrentThread(&mEnv, NULL);
+
+    LOGI("Painter attach jvm %s", result == JNI_OK ? "success" : "failure");
+
+    Looper::loop();
+    if (mJavaVm != nullptr && mEnv != nullptr) {
+        mJavaVm->DetachCurrentThread();
+//        mJavaVm->DestroyJavaVM();
+        mEnv = nullptr;
+    }
+}
 
 void Painter::postDrawRenderTask(RenderTask *task) {
     post(kWhatDrawRenderTask, task);
 }
 
 void Painter::handle(int what, void *data) {
-//    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
+    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
 
     switch (what) {
         case kWhatStart:
@@ -92,6 +108,9 @@ void Painter::handleDrawRenderTask(RenderTask *pTask) {
     LOGD("handleDrawRenderTask diff = %lld", glCommon::systemnanotime() - last);
     last = glCommon::systemnanotime();
 
+    pTask->updateImage(mEnv);
+    mPlayer->requestNextFrame();
+
     pTask->draw();
 
     if (mFirstDisplayUs <= 0) {
@@ -112,23 +131,13 @@ void Painter::handleDrawRenderTask(RenderTask *pTask) {
     }
     mEglSurface->swapBuffers();
 
-    int size = pTask->getFrameSourceVector().size();
+    mPlayer->postTaskFinished(pTask);
 
-
-    for (int i = 0; i < size; ++i) {
-        mUploader->releaseBuffer(pTask->getPboResAt(i));
-    }
-}
-
-void Painter::bindUploader(Uploader *uploader) {
-    mUploader = uploader;
-    post(kWhatStart, nullptr);
 }
 
 
 void Painter::handleStart() {
     mEglCore = new EglCore;
-    mUploader->startUploader(mEglCore->getEglContext());
 }
 
 void Painter::handleStop() {
@@ -148,32 +157,6 @@ void Painter::handleCreateWindowSurface(NativeWindowType pWindow) {
     mEglSurface = new WindowSurface(mEglCore, pWindow, true);
 
     mEglCore->makeCurrent(mEglSurface->getEglSurface());
-
-
-    ANativeWindow_Buffer buffer;
-    ARect rect;
-    ANativeWindow_lock(pWindow, &buffer, &rect);
-
-    ANativeWindow_release(pWindow);
-
-    const EGLint attrs[] =
-            {
-                    EGL_IMAGE_PRESERVED_KHR,
-                    EGL_TRUE,
-                    EGL_NONE,
-                    EGL_NONE
-            };
-
-    auto pEGLImage = eglCreateImageKHR(eglGetCurrentDisplay(),
-                                       eglGetCurrentContext(),
-                                       EGL_NATIVE_BUFFER_ANDROID,
-                                       (EGLClientBuffer) &buffer,
-                                       attrs);
-    if (pEGLImage == EGL_NO_IMAGE_KHR) {
-        LOGI("Error: eglCreateImage() failed at %s:%in", __FILE__, __LINE__);
-    }
-
-
 }
 
 void Painter::handleCreateOffScreenSurface() {
@@ -202,15 +185,27 @@ void Painter::setUpRender(Effect *pEffect) {
 }
 
 void Painter::handleRenderTearDown(Effect *pEffect) {
+    for (auto fs: pEffect->getFrameSourceVector()) {
+        fs->unbindTexture(mEnv);
+    }
     for (auto r : pEffect->getRenderVector()) {
         r->tearDown();
     }
 }
 
 void Painter::handleRenderSetup(Effect *pEffect) {
+    int texCount = 0;
+    auto fsv = pEffect->getFrameSourceVector();
     for (auto r: pEffect->getRenderVector()) {
         r->setUp(mAssetManager, mEglSurface);
+
+        for (int i = 0; i < r->getTextureCount(); ++i) {
+            fsv[texCount + i]->bindTexture(mEnv, r->getTextureIdAt(i), nullptr);
+        }
     }
+
+    mDecodeTread->prepareEffect(pEffect);
+
 }
 
 void Painter::postCreateWindowSurface(ANativeWindow *pWindow) {
@@ -224,6 +219,11 @@ void Painter::handleNewPlay() {
 
 void Painter::postNewPlay() {
     post(kWhatNewPlay, nullptr);
+}
+
+void Painter::bindComponent(Player *player, DecodeThread *decodeThread) {
+    mPlayer = player;
+    mDecodeTread = decodeThread;
 }
 
 
