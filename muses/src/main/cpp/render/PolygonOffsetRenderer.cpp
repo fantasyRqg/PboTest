@@ -58,10 +58,10 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
 //    glEnable(GL_POLYGON_OFFSET_FILL);
 //    glPolygonOffset(-1.0f, -2.0f);
 
-    mvp = mProjMatrix * mViewMatrix
-//          * glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.05f),
-//                      glm::vec3(0.0f, 1.0f, 0.0f))
-            ;
+    auto diff = sin(float(timeUs / 1000L) * 0.002f) * 0.5;
+    mvp = mProjMatrix * mViewMatrix *
+          glm::scale(glm::mat4(1.0f), glm::vec3(1.0f + diff, 1.0f + diff, 1))
+          * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -diff * 0.7f, 0.0f));
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
 
