@@ -39,7 +39,7 @@ public:
     virtual void prepareDrawFrame() = 0;
 
 
-    GLuint getTextureIdAt(int index);
+    virtual GLuint getTextureIdAt(int index) = 0;
 
     virtual int getTextureCount() = 0;
 
@@ -62,12 +62,9 @@ public:
     void setRenderFbo(bool renderFbo);
 
 
-    virtual ~Render();
-
 protected:
     int mZOrder;
     bool mRenderFbo = false;
-    GLuint *mTextureIds;
 };
 
 

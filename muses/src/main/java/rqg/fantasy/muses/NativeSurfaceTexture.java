@@ -27,7 +27,7 @@ public class NativeSurfaceTexture extends SurfaceTexture implements SurfaceTextu
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        Log.d(TAG, "onFrameAvailable: " + surfaceTexture.getTimestamp());
+//        Log.d(TAG, "onFrameAvailable: " + surfaceTexture.getTimestamp());
         MusesNative.onFrameAvailable(mNativeHandler);
     }
 }

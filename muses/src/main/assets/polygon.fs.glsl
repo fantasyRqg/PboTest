@@ -1,9 +1,15 @@
-#version 300 es
+#version 310 es
+
+#extension GL_OES_EGL_image_external_essl3 : require
+
 precision mediump float;
 
-in vec4 vColor;
 out vec4 oColor;
 
+uniform samplerExternalOES videoTex;
+
+in vec2 UV;
+
 void main() {
-    oColor = vColor;
+    oColor = texture( videoTex,UV );
 }

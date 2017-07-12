@@ -61,7 +61,7 @@ void Painter::postDrawRenderTask(RenderTask *task) {
 }
 
 void Painter::handle(int what, void *data) {
-    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
+//    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
 
     switch (what) {
         case kWhatStart:
@@ -102,11 +102,11 @@ void Painter::handle(int what, void *data) {
     }
 }
 
-int64_t last = glCommon::systemnanotime();
+//int64_t last = glCommon::systemnanotime();
 
 void Painter::handleDrawRenderTask(RenderTask *pTask) {
-    LOGD("handleDrawRenderTask diff = %lld", glCommon::systemnanotime() - last);
-    last = glCommon::systemnanotime();
+//    LOGD("handleDrawRenderTask diff = %lld", glCommon::systemnanotime() - last);
+//    last = glCommon::systemnanotime();
 
     pTask->updateImage(mEnv);
     mPlayer->requestNextFrame();
@@ -157,6 +157,8 @@ void Painter::handleCreateWindowSurface(NativeWindowType pWindow) {
     mEglSurface = new WindowSurface(mEglCore, pWindow, true);
 
     mEglCore->makeCurrent(mEglSurface->getEglSurface());
+
+    mEglCore->logGlInfo();
 }
 
 void Painter::handleCreateOffScreenSurface() {

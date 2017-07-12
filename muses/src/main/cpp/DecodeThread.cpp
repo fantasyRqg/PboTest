@@ -44,7 +44,7 @@ typedef struct SkipReq {
 
 
 void DecodeThread::handle(int what, void *data) {
-    int64_t last = glCommon::systemnanotime();
+//    int64_t last = glCommon::systemnanotime();
     switch (what) {
         case kWhatPrepareRes: {
             auto ifs = ((IFrameSource *) data);
@@ -101,8 +101,8 @@ void DecodeThread::handle(int what, void *data) {
         default:
             break;
     }
-    LOGD("%s what = %s currNs = %lld", mName.c_str(), DecodeStr[what].c_str(),
-         glCommon::systemnanotime() - last);
+//    LOGD("%s what = %s currNs = %lld", mName.c_str(), DecodeStr[what].c_str(),
+//         glCommon::systemnanotime() - last);
 }
 
 DecodeThread::~DecodeThread() {

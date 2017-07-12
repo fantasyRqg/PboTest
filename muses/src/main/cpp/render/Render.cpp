@@ -66,30 +66,3 @@ void Render::setRenderFbo(bool renderFbo) {
     mRenderFbo = renderFbo;
 }
 
-
-Render::~Render() {
-    delete[] mTextureIds;
-}
-
-GLuint Render::getTextureIdAt(int index) {
-    if (index > getTextureCount()) {
-        return GL_NONE;
-    }
-    return mTextureIds[index];
-}
-
-
-//void Render::makeSurePboUploaded() {
-//    for (int i = 0; i < getNeededPboCount(); ++i) {
-//        if (mPboResArray[i]->sync != nullptr) {
-//            glWaitSync(mPboResArray[i]->sync, 0, GL_TIMEOUT_IGNORED);
-//            glDeleteSync(mPboResArray[i]->sync);
-//            mPboResArray[i]->sync = nullptr;
-//        }
-//    }
-//}
-
-
-
-
-

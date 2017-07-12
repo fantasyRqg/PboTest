@@ -22,26 +22,13 @@ int PolygonOffsetRenderer::getTextureCount() {
 void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
-//
-//    for (int i = 0; i < TEXTURE_COUNT; ++i) {
-//        auto pbores = mPboResArray[i];
-//        glBindBuffer(GL_PIXEL_PACK_BUFFER, pbores->pbo);
-//        glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureId[i]);
-//
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-//        glCommon::checkGlError("bind texture and pbo");
-//
-//    }
 
     glUseProgram(mProgram);
     glBindBuffer(GL_ARRAY_BUFFER, mVbo);
-    glCommon::checkGlError("glBindBuffer");
-
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0,
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0,
                           (const void *) (sizeof(GLfloat) * 3 * 4 * 2));
     glCommon::checkGlError("glVertexAttribPointer");
 
@@ -51,6 +38,15 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureIds[0]);
+    glUniform1i(mVideoTexLoc, 0);
+
+    mvp = mProjMatrix * mViewMatrix *
+          glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.15f),
+                      glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicatesVbo[1]);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, NULL);
@@ -62,6 +58,17 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
 //    glEnable(GL_POLYGON_OFFSET_FILL);
 //    glPolygonOffset(-1.0f, -2.0f);
 
+    mvp = mProjMatrix * mViewMatrix
+//          * glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.05f),
+//                      glm::vec3(0.0f, 1.0f, 0.0f))
+            ;
+
+    glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureIds[1]);
+    glUniform1i(mVideoTexLoc, 0);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicatesVbo[0]);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, NULL);
     glCommon::checkGlError("glDrawElements 2");
@@ -72,27 +79,30 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
 #define GRAY_COLOR 0.9f,0.5f,0.3f
 #define WHITE_COLOR 1.0f,1.0f,1.0f
 
+
     static const GLfloat vertex_data[] = {
 
             //big
-            -0.5f, -0.5f, 0,
-            0.5f, -0.5f, 0,
-            0.5f, 0.5f, 0,
-            -0.5f, 0.5f, 0,
+            -0.5f, -0.6625f, 0,
+            0.5f, -0.6625f, 0,
+            0.5f, -0.1f, 0,
+            -0.5f, -0.1f, 0,
 //small
-            -0.25f, -0.25f, 0,
-            0.25f, -0.25f, 0,
-            0.25f, 0.25f, 0,
-            -0.25f, 0.25f, 0,
+            -0.5f, 0.1f, 0,
+            0.5f, 0.1f, 0,
+            0.5f, 0.6625f, 0,
+            -0.5f, 0.6625f, 0,
 
-            WHITE_COLOR,
-            WHITE_COLOR,
-            WHITE_COLOR,
-            WHITE_COLOR,
-            GRAY_COLOR,
-            GRAY_COLOR,
-            GRAY_COLOR,
-            GRAY_COLOR,
+            0, 0,
+            1, 0,
+            1, 1,
+            0, 1,
+
+            0, 0,
+            1, 0,
+            1, 1,
+            0, 1
+
 
     };
 
@@ -137,12 +147,14 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
 
     mMvpLocation = glGetUniformLocation(mProgram, "mvpMat");
 
+    mVideoTexLoc = glGetUniformLocation(mProgram, "videoTex");
+
 
     mProjMatrix = glm::perspective(45.0f, eglSurface->getAspect(), 1.0f, 100.0f);
     mViewMatrix = glm::lookAt(
             glm::vec3(0.0f, 0.0f, 2.0f),
             glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
+            glm::vec3(0.0f, -1.0f, 0.0f)
     );
 
     glGenTextures(TEXTURE_COUNT, mTextureIds);
@@ -161,9 +173,14 @@ bool PolygonOffsetRenderer::tearDown() {
     return true;
 }
 
-PolygonOffsetRenderer::PolygonOffsetRenderer() : Render() {
-    mTextureIds = new GLuint[getTextureCount()];
+GLuint PolygonOffsetRenderer::getTextureIdAt(int index) {
+    if (index > getTextureCount()) {
+        return GL_NONE;
+    }
+    return mTextureIds[index];
 }
+
+
 
 
 

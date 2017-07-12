@@ -15,7 +15,6 @@
 
 class PolygonOffsetRenderer : public Render {
 public:
-    PolygonOffsetRenderer();
 
     void prepareDrawFrame() override;
 
@@ -28,17 +27,24 @@ public:
 
     bool tearDown() override;
 
+    GLuint getTextureIdAt(int index) override;
+
 private:
     const static int TEXTURE_COUNT = 2;
     GLuint mProgram;
     GLuint mVertexArray;
     GLuint mVbo;
     GLuint mIndicatesVbo[2];
+    GLuint mTextureIds[TEXTURE_COUNT];
 
     GLint mMvpLocation;
+    GLint mVideoTexLoc;
+
 
     glm::mat4 mProjMatrix;
     glm::mat4 mViewMatrix;
+
+
 };
 
 
