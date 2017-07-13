@@ -43,6 +43,8 @@ public:
 
     void postTaskFinished(RenderTask *pTask);
 
+    void postEffectPrepared(Effect *pEffect);
+
 private:
     struct SeekReq;
     struct SpeedReq;
@@ -52,6 +54,7 @@ private:
 
     EffectManager *mCurrentPlay;
     bool mPlayRun = false;
+    bool mPlayOnEffectReady = false;
 
     void handle(int what, void *data) override;
 
@@ -78,6 +81,8 @@ private:
     void handleRenderTaskFail(RenderTask *pTask);
 
     void handleTaskFinished(RenderTask *pTask);
+
+    void handleEffectPrepared(Effect *pEffect);
 };
 
 

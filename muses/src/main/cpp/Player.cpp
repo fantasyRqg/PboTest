@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "util/common.h"
 
+#define EFFECT_PRE_LOAD_US 100000L
+
 #undef TAG
 #define TAG "Player"
 
@@ -20,6 +22,7 @@ enum {
     kWhatOnError,
     kWhatRenderTaskFail,
     kWhatTaskFinished,
+    kWhatEffectPrepared,
 };
 
 std::string PlayerEnumStr[]{
@@ -130,15 +133,21 @@ void Player::handle(int what, void *data) {
         case kWhatTaskFinished:
             handleTaskFinished((RenderTask *) data);
             break;
+
+        case kWhatEffectPrepared:
+            handleEffectPrepared((Effect *) data);
+            break;
         default:
             break;
     }
 }
 
 void Player::handlePlay(EffectManager *pManager) {
+    pManager->reset();
     mCurrentPlay = pManager;
     mPlayRun = true;
     mPainter->postNewPlay();
+
     playOneFrame(mCurrentPlay);
 }
 
@@ -189,6 +198,7 @@ void Player::playOneFrame(EffectManager *pManager) {
         if (!effect->isPrepared()) {
             mPainter->setUpRender(effect);
             effect->setPrepared(true);
+            mPlayOnEffectReady = true;
             return;
         }
 
@@ -200,9 +210,11 @@ void Player::playOneFrame(EffectManager *pManager) {
 
             auto eNext = pManager->getNextEffect();
 
-            if (eNext != nullptr && !eNext->isPrepared() && effect->getRemainUs() < 100000L) {
+            if (eNext != nullptr && !eNext->isPrepared() &&
+                effect->getRemainUs() < EFFECT_PRE_LOAD_US) {
                 mPainter->setUpRender(eNext);
                 eNext->setPrepared(true);
+                mPlayOnEffectReady = false;
             }
 
         } else {
@@ -245,6 +257,17 @@ void Player::handleRenderTaskFail(RenderTask *pTask) {
 
 void Player::handleTaskFinished(RenderTask *pTask) {
     delete pTask;
+}
+
+void Player::handleEffectPrepared(Effect *pEffect) {
+    if (mPlayOnEffectReady) {
+        requestNextFrame();
+        mPlayOnEffectReady = false;
+    }
+}
+
+void Player::postEffectPrepared(Effect *pEffect) {
+    post(kWhatEffectPrepared, pEffect);
 }
 
 

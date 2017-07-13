@@ -67,9 +67,9 @@ void onSurfaceCreated(JNIEnv *env, jclass type, jobject surface, jobject assetMa
     EffectLine *el = new EffectLine();
     try {
         el->append(new TestEffect(3000000L));
-        el->appendPre(new NormalEffect("/sdcard/testVideo/test3.mp4", 1000000L));
-        el->appendPre(new NormalEffect("/sdcard/testVideo/test2.mp4", 1000000L));
-        el->appendPre(new NormalEffect("/sdcard/testVideo/test1.mp4", 1000000L));
+        el->append(new NormalEffect("/sdcard/testVideo/test3.mp4", 1000000L));
+        el->append(new NormalEffect("/sdcard/testVideo/test2.mp4", 2000000L));
+        el->append(new NormalEffect("/sdcard/testVideo/test1.mp4", 1000000L));
     } catch (std::runtime_error e) {
         LOGE("init effect error: %s", e.what());
         return;

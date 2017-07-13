@@ -249,7 +249,7 @@ void DecodeThread::handlePrepareEffect(Effect *pEffect) {
         }
     }
 
-    mPlayer->requestNextFrame();
+    mPlayer->postEffectPrepared(pEffect);
 }
 
 
