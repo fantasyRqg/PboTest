@@ -63,3 +63,11 @@ void Effect::setPrepared(bool prepared) {
 long Effect::getDurationUs() {
     return mEndTimeUs - mStartTimeUs;
 }
+
+long Effect::getElapsedUs() {
+    return mRunUs;
+}
+
+long Effect::getRemainUs() {
+    return getDurationUs() - mRunUs;
+}

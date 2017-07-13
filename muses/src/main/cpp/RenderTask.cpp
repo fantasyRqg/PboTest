@@ -2,8 +2,8 @@
 // Created by ranqingguo on 7/8/17.
 //
 
+#include <assert.h>
 #include "RenderTask.h"
-#include "exception/IlleaglStateException.h"
 
 enum {
     kFrameReady,
@@ -23,7 +23,8 @@ RenderTask::RenderTask(int64_t presentTimeUs,
 
     unsigned int size = mFrameSourceVector.size();
     if (c != size) {
-        throw IllegalStateException("needed bpo count not  === provided frame source count");
+//        throw IllegalStateException("needed bpo count not  === provided frame source count");
+        assert(false);
     }
 
 

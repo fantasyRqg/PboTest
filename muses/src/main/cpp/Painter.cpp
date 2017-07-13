@@ -61,7 +61,7 @@ void Painter::postDrawRenderTask(RenderTask *task) {
 }
 
 void Painter::handle(int what, void *data) {
-//    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
+    LOGI("%s what = %s ", mName.c_str(), painterStr[what].c_str());
 
     switch (what) {
         case kWhatStart:

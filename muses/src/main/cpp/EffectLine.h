@@ -32,6 +32,8 @@ public:
 
     void seekTo(long timeUs);
 
+    Effect *getNext();
+
 private:
     void appendEffectItem(EffectItem *item, EffectItem *ei);
 

@@ -31,6 +31,8 @@ public:
 
     Effect *getEffect();
 
+    Effect *getNextEffect();
+
     void reset();
 
 private:

@@ -89,7 +89,7 @@ void Player::postOnError(std::runtime_error *pError) {
 
 
 void Player::handle(int what, void *data) {
-//    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
+    LOGV("handle what = %s", PlayerEnumStr[what].c_str());
     switch (what) {
         case kWhatPlay:
             handlePlay((EffectManager *) data);
@@ -192,19 +192,19 @@ void Player::playOneFrame(EffectManager *pManager) {
             return;
         }
 
-        RenderTask *task = nullptr;
-        try {
-            task = effect->nextRenderTask();
-        } catch (std::runtime_error e) {
-            postOnError(new std::runtime_error(e.what()));
-            if (effect->isPrepared()) {
-                mDecodeThread->releaseEffect(effect);
-            }
-            return;
-        }
+
+        RenderTask *task = effect->nextRenderTask();
 
         if (task != nullptr) {
             mDecodeThread->postRenderTask(task);
+
+            auto eNext = pManager->getNextEffect();
+
+            if (eNext != nullptr && !eNext->isPrepared() && effect->getRemainUs() < 100000L) {
+                mPainter->setUpRender(eNext);
+                eNext->setPrepared(true);
+            }
+
         } else {
             advanceEffectManager(pManager, effect);
         }

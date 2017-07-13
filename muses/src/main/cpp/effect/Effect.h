@@ -38,6 +38,10 @@ public:
 
     long getDurationUs();
 
+    long getElapsedUs();
+
+    long getRemainUs();
+
     bool offsetTime(long offsetUs);
 
     bool hasNextFrame();

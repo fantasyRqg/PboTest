@@ -117,3 +117,11 @@ std::string EffectLine::getInfo() {
 
     return ss.str();
 }
+
+Effect *EffectLine::getNext() {
+    if (mCurrent == nullptr || mCurrent == mEnd) {
+        return nullptr;
+    } else {
+        return mCurrent->next->pEffect;
+    }
+}

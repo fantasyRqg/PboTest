@@ -30,3 +30,7 @@ Effect *EffectManager::getEffect() {
 void EffectManager::reset() {
     mBaseEffectLine->reset();
 }
+
+Effect *EffectManager::getNextEffect() {
+    return mBaseEffectLine->getNext();
+}
