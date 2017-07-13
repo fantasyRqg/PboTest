@@ -11,6 +11,7 @@
 #include "effect/TestEffect.h"
 #include "EffectManager.h"
 #include "Player.h"
+#include "effect/NormalEffect.h"
 
 #undef TAG
 #define TAG "native-lib"
@@ -65,11 +66,16 @@ void onSurfaceCreated(JNIEnv *env, jclass type, jobject surface, jobject assetMa
 
     EffectLine *el = new EffectLine();
     try {
-        el->append(new TestEffect(100000000L));
+        el->append(new TestEffect(3000000L));
+        el->appendPre(new NormalEffect("/sdcard/testVideo/test3.mp4", 1000000L));
+        el->appendPre(new NormalEffect("/sdcard/testVideo/test2.mp4", 1000000L));
+        el->appendPre(new NormalEffect("/sdcard/testVideo/test1.mp4", 1000000L));
     } catch (std::runtime_error e) {
         LOGE("init effect error: %s", e.what());
         return;
     }
+
+    LOGD("el info = %s", el->getInfo().c_str());
 
     EffectManager *em = new EffectManager(24, el);
 

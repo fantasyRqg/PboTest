@@ -28,6 +28,8 @@ public:
 
     void reset();
 
+    std::string getInfo();
+
     void seekTo(long timeUs);
 
 private:

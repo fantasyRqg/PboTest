@@ -2,6 +2,7 @@
 // Created by ranqingguo on 7/7/17.
 //
 
+#include <sstream>
 #include "EffectLine.h"
 
 typedef struct EffectItem {
@@ -48,7 +49,9 @@ void EffectLine::append(Effect *effect) {
 
     auto ei = new EffectItem();
     ei->pEffect = effect;
-
+    if (mEnd->prev != mHeader) {
+        effect->offsetTime(mEnd->prev->pEffect->getEndTimeUs());
+    }
     appendEffectItem(ei, mEnd->prev);
 
 }
@@ -60,6 +63,13 @@ void EffectLine::appendPre(Effect *effect) {
     auto ei = new EffectItem;
 
     ei->pEffect = effect;
+
+    auto offset = effect->getDurationUs();
+    auto ce = mHeader->next;
+    while (ce != mEnd) {
+        ce->pEffect->offsetTime(offset);
+        ce = ce->next;
+    }
 
     appendEffectItem(ei, mHeader);
 }
@@ -92,4 +102,18 @@ void EffectLine::reset() {
 
 void EffectLine::seekTo(long timeUs) {
 
+}
+
+std::string EffectLine::getInfo() {
+    std::stringstream ss;
+
+    auto ei = mHeader->next;
+    while (ei != nullptr && ei != mEnd) {
+        auto ef = ei->pEffect;
+        ss << ef->getStartTimeUs() << "  " << ef->getEndTimeUs() << std::endl;
+
+        ei = ei->next;
+    }
+
+    return ss.str();
 }

@@ -59,3 +59,7 @@ bool Effect::hasNextFrame() {
 void Effect::setPrepared(bool prepared) {
     mPrepared = prepared;
 }
+
+long Effect::getDurationUs() {
+    return mEndTimeUs - mStartTimeUs;
+}

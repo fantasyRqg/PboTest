@@ -112,7 +112,7 @@ DecodeThread::~DecodeThread() {
 DecodeThread::DecodeThread() : Looper("DecodeThread") {}
 
 void DecodeThread::requestFrame(RenderResRequest *rrr) {
-//    rrr->start = glCommon::systemnanotime();
+    rrr->start = glCommon::systemnanotime();
     post(kWhatRequestFrame, rrr);
 
 }
@@ -179,6 +179,8 @@ void DecodeThread::onFrameAvailable(RenderResRequest *pRequest) {
 }
 
 void DecodeThread::handleFrameAvailable(RenderResRequest *pRequest) {
+    LOGI("handleFrameAvailable name = %lld take = %lld", pRequest->task->getPresentTimeUs(),
+         glCommon::systemnanotime() - pRequest->start);
     auto task = pRequest->task;
     task->setFrameReady(true, pRequest->resIndex);
     if (task->isFramePrepared()) {
@@ -197,6 +199,8 @@ void DecodeThread::requestResFail(RenderResRequest *pRequest) {
 }
 
 void DecodeThread::handleRequestResFail(RenderResRequest *pRequest) {
+    LOGW("handleRequestResFail take = %lld", glCommon::systemnanotime() - pRequest->start);
+
     auto task = pRequest->task;
     task->setFrameReady(false, pRequest->resIndex);
 
@@ -224,7 +228,7 @@ void DecodeThread::postRenderTask(RenderTask *pTask) {
 
     if (size > 0) {
         for (int i = 0; i < size; ++i) {
-            requestFrame(new RenderResRequest(pTask, i,this));
+            requestFrame(new RenderResRequest(pTask, i, this));
         }
     } else {
         mPainter->postDrawRenderTask(pTask);
@@ -250,7 +254,7 @@ void DecodeThread::handlePrepareEffect(Effect *pEffect) {
 }
 
 
-RenderResRequest::RenderResRequest(RenderTask *task, int resIndex,DecodeThread * thread)
-        : task(task), resIndex(resIndex),decodeThread(thread) {
+RenderResRequest::RenderResRequest(RenderTask *task, int resIndex, DecodeThread *thread)
+        : task(task), resIndex(resIndex), decodeThread(thread) {
 
 }

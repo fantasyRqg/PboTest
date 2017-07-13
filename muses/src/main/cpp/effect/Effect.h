@@ -36,6 +36,8 @@ public:
 
     long getEndTimeUs() const;
 
+    long getDurationUs();
+
     bool offsetTime(long offsetUs);
 
     bool hasNextFrame();
@@ -50,6 +52,7 @@ public:
     std::vector<std::shared_ptr<Render>> getRenderVector();
 
     void setPrepared(bool prepared);
+
 
 protected:
     long mStartTimeUs;

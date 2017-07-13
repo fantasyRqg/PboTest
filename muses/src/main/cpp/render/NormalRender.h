@@ -2,8 +2,8 @@
 // Created by ranqingguo on 7/13/17.
 //
 
-#ifndef PBOTEST_NORMALEFFECT_H
-#define PBOTEST_NORMALEFFECT_H
+#ifndef PBOTEST_NORMALRENDER_H
+#define PBOTEST_NORMALRENDER_H
 
 
 #include <glm/glm.hpp>
@@ -20,17 +20,20 @@ public:
 
     bool tearDown() override;
 
+protected:
+    GLuint *getTextureIdArray() override;
+
 private:
     const static int TEXTURE_COUNT = 1;
     GLuint mProgram;
     GLuint mVertexArray;
     GLuint mVbo;
+    GLuint mIbo;
 
     GLuint mTextureIds[TEXTURE_COUNT];
 
     GLint mMvpLocation;
     GLint mVideoTexLoc;
-    GLint mAlphaLoc;
 
 
     glm::mat4 mProjMatrix;
@@ -38,4 +41,4 @@ private:
 };
 
 
-#endif //PBOTEST_NORMALEFFECT_H
+#endif //PBOTEST_NORMALRENDER_H
