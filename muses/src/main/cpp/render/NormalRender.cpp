@@ -5,12 +5,9 @@
 #include "NormalRender.h"
 
 
-GLuint NormalRender::getTextureIdAt(int index) {
-    return nullptr;
-}
-
 int NormalRender::getTextureCount() {
-    return 0;
+
+    return TEXTURE_COUNT;
 }
 
 void NormalRender::drawFrame(int64_t timeUs) {

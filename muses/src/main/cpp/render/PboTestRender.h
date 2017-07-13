@@ -18,8 +18,6 @@ public:
 
     bool tearDown() override;
 
-    void prepareDrawFrame() override;
-
 
     int getTextureCount() override;
 

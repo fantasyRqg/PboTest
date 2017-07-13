@@ -39,7 +39,8 @@ public:
 //    virtual void prepareDrawFrame() = 0;
 
 
-    virtual GLuint getTextureIdAt(int index) = 0;
+    GLuint getTextureIdAt(int index);
+
 
     virtual int getTextureCount() = 0;
 
@@ -65,6 +66,9 @@ public:
 protected:
     int mZOrder;
     bool mRenderFbo = false;
+
+    virtual GLuint *getTextureIdArray() = 0;
+
 };
 
 

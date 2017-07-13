@@ -66,3 +66,10 @@ void Render::setRenderFbo(bool renderFbo) {
     mRenderFbo = renderFbo;
 }
 
+GLuint Render::getTextureIdAt(int index) {
+    if (index > getTextureCount()) {
+        return GL_NONE;
+    }
+    return getTextureIdArray()[index];
+}
+

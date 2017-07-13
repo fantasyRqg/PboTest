@@ -174,11 +174,9 @@ bool PolygonOffsetRenderer::tearDown() {
     return true;
 }
 
-GLuint PolygonOffsetRenderer::getTextureIdAt(int index) {
-    if (index > getTextureCount()) {
-        return GL_NONE;
-    }
-    return mTextureIds[index];
+
+GLuint *PolygonOffsetRenderer::getTextureIdArray() {
+    return mTextureIds;
 }
 
 

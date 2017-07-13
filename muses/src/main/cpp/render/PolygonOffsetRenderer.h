@@ -27,7 +27,8 @@ public:
 
     bool tearDown() override;
 
-    GLuint getTextureIdAt(int index) override;
+protected:
+    GLuint *getTextureIdArray() override;
 
 private:
     const static int TEXTURE_COUNT = 2;

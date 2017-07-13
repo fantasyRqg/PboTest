@@ -256,10 +256,6 @@ bool PboTestRender::tearDown() {
     return true;
 }
 
-void PboTestRender::prepareDrawFrame() {
-
-}
-
 
 int PboTestRender::getTextureCount() {
     return 0;
