@@ -16,7 +16,7 @@
 class PolygonOffsetRenderer : public Render {
 public:
 
-    void prepareDrawFrame() override;
+//    void prepareDrawFrame() override;
 
 
     int getTextureCount() override;

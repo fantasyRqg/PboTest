@@ -36,7 +36,7 @@ public:
      * assume: after Bpo upload texture via DMA, we can use CPU do something
      * run on Painter
      */
-    virtual void prepareDrawFrame() = 0;
+//    virtual void prepareDrawFrame() = 0;
 
 
     virtual GLuint getTextureIdAt(int index) = 0;

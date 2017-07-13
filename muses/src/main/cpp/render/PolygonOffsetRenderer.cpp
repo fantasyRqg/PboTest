@@ -10,9 +10,9 @@
 #include "../util/common.h"
 
 
-void PolygonOffsetRenderer::prepareDrawFrame() {
-
-}
+//void PolygonOffsetRenderer::prepareDrawFrame() {
+//
+//}
 
 
 int PolygonOffsetRenderer::getTextureCount() {
