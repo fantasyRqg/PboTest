@@ -60,6 +60,8 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
     auto diff = sin(float(timeUs / 1000L) * 0.002f) * 0.5;
     mvp = mProjMatrix * mViewMatrix *
           glm::scale(glm::mat4(1.0f), glm::vec3(1.0f + diff, 1.0f + diff, 1))
+          * glm::rotate(glm::mat4(1.0f), glm::radians(float(diff) * 150.0f),
+                        glm::vec3(0.0f, 0.0f, 1.0f))
           * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -diff * 0.7f, 0.0f));
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
