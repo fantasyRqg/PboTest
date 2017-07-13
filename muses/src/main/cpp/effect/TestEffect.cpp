@@ -11,10 +11,15 @@ TestEffect::TestEffect(long durationUs) : Effect(durationUs) {
     std::shared_ptr<Render> p(new PolygonOffsetRenderer());
     mRenderVector.push_back(p);
 
+//    std::shared_ptr<VideoFrameSource> v1(
+//            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100EJEGQ_VID_0041_47a0bba.mp4"));
+//    std::shared_ptr<VideoFrameSource> v2(
+//            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100EJEGQ_VID_0076_ff0fa2b.mp4"));
+//
     std::shared_ptr<VideoFrameSource> v1(
-            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100EJEGQ_VID_0041_47a0bba.mp4"));
+            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100APCPP_VID_0491_09474d8.mp4"));
     std::shared_ptr<VideoFrameSource> v2(
-            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100EJEGQ_VID_0076_ff0fa2b.mp4"));
+            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100EJEGQ_VID_0067_4b6447f.mp4"));
 
 //    std::shared_ptr<VideoFrameSource> v1(
 //            new VideoFrameSource("/sdcard/DCIM/Hover_Camera/100APCPP_VID_0313_1e53b82.mp4"));

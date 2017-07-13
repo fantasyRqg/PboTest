@@ -32,21 +32,17 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
                           (const void *) (sizeof(GLfloat) * 3 * 4 * 2));
     glCommon::checkGlError("glVertexAttribPointer");
 
-    glm::mat4 mvp = mProjMatrix * mViewMatrix *
-                    glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.1f),
-                                glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureIds[0]);
     glUniform1i(mVideoTexLoc, 0);
 
-    mvp = mProjMatrix * mViewMatrix *
-          glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.15f),
-                      glm::vec3(0.0f, 1.0f, 0.0f));
+    auto mvp = mProjMatrix * mViewMatrix *
+               glm::rotate(glm::mat4(1.0f), glm::radians(float(timeUs / 1000L) * 0.15f),
+                           glm::vec3(0.0f, 1.0f, 0.0f));
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
+    glUniform1f(mAlphaLoc, 1.0f);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicatesVbo[1]);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, NULL);
@@ -58,12 +54,16 @@ void PolygonOffsetRenderer::drawFrame(int64_t timeUs) {
 //    glEnable(GL_POLYGON_OFFSET_FILL);
 //    glPolygonOffset(-1.0f, -2.0f);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     auto diff = sin(float(timeUs / 1000L) * 0.002f) * 0.5;
     mvp = mProjMatrix * mViewMatrix *
           glm::scale(glm::mat4(1.0f), glm::vec3(1.0f + diff, 1.0f + diff, 1))
           * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -diff * 0.7f, 0.0f));
 
     glUniformMatrix4fv(mMvpLocation, 1, GL_FALSE, &mvp[0][0]);
+    glUniform1f(mAlphaLoc, (GLfloat) (0.7f + diff));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureIds[1]);
@@ -149,6 +149,7 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
 
     mVideoTexLoc = glGetUniformLocation(mProgram, "videoTex");
 
+    mAlphaLoc = glGetUniformLocation(mProgram, "showAlpha");
 
     mProjMatrix = glm::perspective(45.0f, eglSurface->getAspect(), 1.0f, 100.0f);
     mViewMatrix = glm::lookAt(

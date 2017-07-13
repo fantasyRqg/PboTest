@@ -39,6 +39,7 @@ private:
 
     GLint mMvpLocation;
     GLint mVideoTexLoc;
+    GLint mAlphaLoc;
 
 
     glm::mat4 mProjMatrix;
