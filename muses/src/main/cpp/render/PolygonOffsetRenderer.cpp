@@ -104,8 +104,6 @@ bool PolygonOffsetRenderer::setUp(AAssetManager *amgr, EglSurfaceBase *eglSurfac
             1, 0,
             1, 1,
             0, 1
-
-
     };
 
 
